@@ -89,8 +89,8 @@
 
 .btn-help {
   position: absolute;
-  right: 0px;
-  top: 10px;
+  right: -60px;
+  top: 0px;
   background-color: #3fc3ee;
   border: none; /* No border */
   color: white; /* White text */

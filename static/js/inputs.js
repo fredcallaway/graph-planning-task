@@ -41,7 +41,6 @@ class Button extends Input {
     .addClass(cls)
     .appendTo(this.div)
 
-    console.log('cls', cls)
     window.btn = this.button
 
 
@@ -208,7 +207,8 @@ class TopBar {
       width: this.width,
       margin: 'auto',
       position: 'relative',
-      'user-select': 'none',
+      userSelect: 'none',
+      // border: 'thin red solid',
       // 'margin-bottom': '20px',
       // 'margin-top': '20px'
     })
@@ -217,9 +217,10 @@ class TopBar {
       this.counter = $('<div>')
       .addClass('left')
       .css({
-        'margin-top': '20px',
-        'font-weight': 'bold',
-        'font-size': '16pt'
+        position: 'absolute',
+        bottom: 0,
+        fontWeight: 'bold',
+        fontSize: '16pt'
       })
       .appendTo(this.div)
       this.count = 1

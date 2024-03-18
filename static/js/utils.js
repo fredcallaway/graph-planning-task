@@ -88,11 +88,10 @@ function enforceScreenSize(width, height, display='#display') {
   warning = $('<div>')
   .addClass('alert alert-warning center')
   .css({
-    'width': 400,
-    // 'position': 'absolute',
-    // 'top': '30%',
-    'margin': 'auto',
-    'margin-top': '100px'
+    textAlign: 'center',
+    width: 400,
+    margin: 'auto',
+    marginTop: '100px'
   })
   .html(`
     <h4>Screen too small</h4>

@@ -164,7 +164,7 @@ class Instructions {
 }
 
 
-class ExampleInstructions extends Instructions {
+class GraphInstructions extends Instructions {
   constructor(options={}) {
     super(options)
 
