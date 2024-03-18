@@ -1,0 +1,227 @@
+
+/* template basics */
+
+#welcome-message {
+   max-width: 95%; /* this is mainly an IE 10-11 fix */
+   margin: auto;
+   margin-top: 20px;
+   text-align: center
+ }
+
+/* this is the element where all experiment content goes */
+ #display {
+  max-width: 1200px;
+  margin: auto;
+  margin-top: 10px;
+  user-select: none;  /* no selecting text */
+/*  border: thin red solid;*/
+ }
+
+ #display:focus {
+   outline: none;
+ }
+
+#load-icon {
+  z-index: 1;
+  width: 150px;
+  height: 150px;
+  margin: auto;
+  margin-top: 30px;
+  border: 16px solid #f3f3f3;
+  border-radius: 50%;
+  border-top: 16px solid #3498db;
+  width: 120px;
+  height: 120px;
+  -webkit-animation: spin 2s linear infinite;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-bottom {
+  position: relative;
+  -webkit-animation-name: animatebottom;
+  -webkit-animation-duration: 1s;
+  animation-name: animatebottom;
+  animation-duration: 1s
+}
+
+@keyframes animatebottom { 
+  from{ bottom:-40px; opacity:0 } 
+  to{ bottom:0; opacity:1 }
+}
+
+#success-load {
+  display: none;
+  text-align: center;
+}
+
+/* these are not critical but I find them useful  */
+
+.text {
+  margin: auto;
+  max-width: 700px;
+}
+
+.btn-help {
+  position: absolute;
+  right: 0px;
+  top: 10px;
+  background-color: #3fc3ee;
+  border: none; /* No border */
+  color: white; /* White text */
+  text-align: center; /* Centered text */
+  display: inline-block; /* Inline-block element */
+  font-size: 20px; /* Large text size */
+  margin: 4px 2px; /* Some margin */
+  cursor: pointer; /* Pointer cursor on hover */
+  border-radius: 50%; /* Rounded shape */
+  width: 50px; /* Fixed width */
+  height: 50px; /* Fixed height */
+  font-weight: bold; /* Bold text */
+}
+
+.swal2-html-container {
+  font-size: 11pt !important;
+}
+
+button.btn:disabled {
+    opacity: .5;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.7);
+  }
+  50% {
+    transform: scale(1);
+    box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+  }
+}
+
+.btn-pulse {
+  animation: pulse 1.5s infinite;
+  transition: transform 0.5s;
+/*  border: 3px solid rgba(0, 123, 255);*/
+  font-weight: bold;
+  background-color: rgba(0, 123, 255, 0.2); /* Customize button background color */
+  color: rgba(0, 123, 255);
+}
+
+/* everything below here is from psiturk */
+
+/********************************************************************/
+/* Generic element styles                                           */
+/********************************************************************/
+
+body {
+    padding:0px;
+    margin: 0px;
+    background-color: white;
+    color: black;
+    font-weight: 300;
+    font-size: 14pt;
+}
+
+h1 {
+    margin-top: 0px;
+}
+
+
+/* text styling */
+strong {
+  font-weight: 600;
+}
+
+ul {
+    margin: 0;
+}
+
+ol.insructions > li {
+    margin: 1em 0;
+}
+
+.warm {
+  color: steelblue;
+  text-align: justify;
+}
+
+.cool {
+  color: #ccccff;
+}
+
+/* these are all the same for now, but easy to modify individually */
+#container-flyer, #container-error, #container-exp, #container-consent, #container-instructions, #container-questionnaire {
+    background: white;
+    margin: 30px;
+}
+
+#container-consent {
+  max-width: 1000px;
+  margin: auto;
+}
+
+/* ad.html  - the ad that people view first */
+#adlogo {
+    width: 200px;
+    padding: 2px;
+}
+
+/* consent.html - the consent form */
+.legal {
+  text-align: justify;
+  font-size: 11pt;
+  line-height: 1.1em;
+}
+
+.spacer {
+    clear: both;
+}
+
+/********************************************************************/
+/* Index slide components                                           */
+/********************************************************************/
+
+img.logo { height: 6.25em; }
+
+#consent {
+    padding-left: 4%;
+    padding-right: 4%;
+    margin: 1.5em 0;
+    text-align: justify;
+}
+
+span.consent {
+    font-color: red;
+}
+
+/********************************************************************/
+/* Finished slide components                                        */
+/********************************************************************/
+
+#submit_error_slide {
+    display: none;
+}
+
+#resubmit_slide {
+    display: none;
+}
+
+/********************************************************************/
+/* Error                                                            */
+/********************************************************************/
+
+#error-message {
+    background-color: #FEA;
+    padding: 0 0.625em;
+    border: 1px solid black;
+    margin: 0.625em;
+}
