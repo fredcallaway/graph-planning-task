@@ -15,14 +15,7 @@ const FAST_MODE = (new URLSearchParams(location.search)).get('fast') == '1'
 
 class Graph {
   constructor(adjacency) {
-    // Is a list of pairs of states and successors. We assume the graph is directed,
-    // so both directions of an edge should be specified for undirected graphs.
-    // We intentionally take this as a list instead of a dictionary since JSON dictionaries
-    // (which we use as a transport protocol) require strings for keys, but we want to
-    // avoid any complicated data conversion or assumptions here.
-    // We do ultimately make use of a dictionary to map state to successors, which should
-    // work well as long as the input doesn't contain the same state repeated with different
-    // data types.
+    // adjacency is a list of [state, children] pairs
     // Graph([[0, [1, 2]], [1, [3, 4]], [2, [5, 6]], ...]) // an example of a binary tree.
 
     this._adjacency = {}
@@ -63,24 +56,28 @@ function circleXY(N) {
 
 
 class CircleGraph {
-  constructor(root, options) {
-    this.root = $(root)
+  constructor(options) {
+    this.options = options = _.defaults(options, {
+      consume: true,
+      edgeShow: (() => true),
+      show_steps: options.n_steps > 0,
+      show_points: true,
+      show_successor_rewards: true,
+      keep_hover: true,
+    })
+    // successorKeys:  options.graphRenderOptions.successorKeys
+    this.trialId = crypto.randomUUID()
+    this.logEvent('graph.construct', _.pick(this.options,
+      'graph', 'n_steps', 'rewards', 'start', 'hover_edges', 'hover_rewards', 'expansions'
+    ))
+    this.root = $("<div>")
+    .css({
+      position: 'relative',
+      textAlign: 'center',
+      border: 'thick black solid',
+    })
+
     window.cg = this
-    console.log('CircleGraph', options)
-
-    if (options.dynamicProperties) {
-      Object.assign(options, options.dynamicProperties());
-    }
-
-    this.options = options;
-    options.consume = options.consume ?? true
-    options.edgeShow = options.edgeShow ?? (() => true);
-    // options.successorKeys = options.graphRenderOptions.successorKeys
-    options.show_steps = options.show_steps ?? options.n_steps > 0
-    options.show_points = options.show_points ?? true
-    options.show_successor_rewards = options.show_successor_rewards ?? true
-    options.keep_hover = options.keep_hover ?? true
-
 
     this.rewards = [...options.rewards] ?? Array(options.graph.length).fill(0)
     this.onStateVisit = options.onStateVisit ?? ((s) => {})
@@ -99,7 +96,6 @@ class CircleGraph {
       {
         edgeShow: options.edgeShow,
         successorKeys: options.successorKeys,
-        probe: options.probe,
         ...options.graphRenderOptions,
       }
     );
@@ -118,25 +114,36 @@ class CircleGraph {
     `)
     this.wrapper.append(this.el)
     .appendTo(this.root)
-    // .hide()
+    .hide()
 
     this.setRewards(options.rewards)
+  }
 
-    // Making sure it is easy to clean up event listeners...
-    this.cancellables = [];
+  attach(div) {
+    this.root.appendTo(div)
+  }
 
-    this.data = {
-      trial: _.pick(this.options, 'graph', 'n_steps', 'rewards', 'start', 'hover_edges', 'hover_rewards', 'expansions')
-    }
-    this.setupLogging()
+  async run(display) {
+    if (display) this.attach(display)
+
+    this.setCurrentState(this.options.start)
+    await this.showStartScreen()
+    await this.plan()
+    await this.navigate()
+  }
+
+  logEvent(event, info={}) {
+    info.trialId = this.trialId
+    logEvent(event, info)
+    if (this.logger_callback) this.logger_callback(event, info)
   }
 
   highlight(state, postfix='') {
-    this.logger('highlight', {state})
+    this.logEvent('highlight', {state})
     $(`.GraphNavigation-State-${state}`).addClass(`GraphNavigation-State-Highlighted${postfix}`)
   }
   unhighlight(state, postfix='') {
-    this.logger('unhighlight', {state})
+    this.logEvent('unhighlight', {state})
     $(`.GraphNavigation-State-${state}`).removeClass(`GraphNavigation-State-Highlighted${postfix}`)
   }
 
@@ -163,7 +170,7 @@ class CircleGraph {
     $(this.el).css({opacity: 1});
   }
 
-  async showStartScreen(trial) {
+  async showStartScreen() {
     if (FAST_MODE) {
       this.showGraph()
       return
@@ -193,7 +200,7 @@ class CircleGraph {
       return
     }
 
-    if (trial.bonus) {
+    if (this.options.bonus) {
       $('<p>')
       .addClass('Graph-bonus')
       .css({
@@ -208,12 +215,15 @@ class CircleGraph {
       .appendTo(this.root)
     }
 
-    await makeButton(this.root, 'start', {css: {'margin-top': '210px'}, post_delay: 0})
+    await button(this.root, 'start', {post_delay: 0, persistent: false})
+    .css({marginTop: '210px'})
+    .promise()
+
     $('.Graph-bonus').remove()
     await sleep(200)
-    if (trial.n_steps > 0) {
+    if (this.options.n_steps > 0) {
       let moves = $('<p>')
-      .text(numString(trial.n_steps, "move"))
+      .text(numString(this.options.n_steps, "move"))
       .addClass('Graph-moves')
       .appendTo(this.root)
       await sleep(1000)
@@ -229,20 +239,6 @@ class CircleGraph {
     return waitForSpace();
   }
 
-  setupLogging() {
-    this.data.events = []
-    this.logger = function (event, info={}) {
-      if (this.logger_callback) this.logger_callback(event, info)
-      if (!event.startsWith('mouse')) console.log(event, info)
-      // console.log(event, info)
-      this.data.events.push({
-        time: Date.now(),
-        event,
-        ...info
-      });
-    }
-  }
-
   setupEyeTracking() {
     this.data.state_boxes = {}
     this.graph.states.forEach(s => {
@@ -255,7 +251,7 @@ class CircleGraph {
   }
 
   async plan(intro=false) {
-    this.logger('begin imagination mode')
+    this.logEvent('begin imagination mode')
     if (this.options.actions) return  // demo mode
     // don't double up the event listeners
     if (this.planningPhaseActive) return
@@ -277,7 +273,7 @@ class CircleGraph {
       el.classList.add('PathIdentification-selectable')
       el.addEventListener(eventType, (e) => {
         if (this.planningPhaseActive) {
-          this.logger('imagine', {state})
+          this.logEvent('imagine', {state})
           this.hover(state)
         }
       });
@@ -294,25 +290,18 @@ class CircleGraph {
     let msg = `
       exit imagination mode
     `
-    await makeButton(this.root, msg, {
-      css: {'margin-top': '-600px', 'z-index': '12', 'position': 'relative'},
+    await button(this.root, msg, {
       post_delay: 0,
       pre_delay: .5,
-    })
-    this.logger('exit imagination mode')
+      persistent: true,
+      cls: 'absolute-centered',
+      persistent: false
+    }).promise()
+    this.logEvent('exit imagination mode')
     this.planningPhaseActive = false
     $('.GraphNavigation').css('opacity', 1)
     $(`.GraphNavigation-State`).removeClass('PathIdentification-selectable')
     $('.GraphNavigation-arrow,.GraphReward,.GraphNavigation-edge').css('transition', '')
-  }
-
-  cancel() {
-    // Use this for early termination of the graph.
-    // Only used during free-form graph navigation.
-    for (const c of this.cancellables) {
-      c();
-    }
-    this.cancellables = [];
   }
 
   setCurrentState(state, options) {
@@ -386,7 +375,7 @@ class CircleGraph {
 
   async visitState(state, initial=false) {
     assert(typeof(1) == 'number')
-    this.logger('visit', {state, initial})
+    this.logEvent('visit', {state, initial})
     this.onStateVisit(state);
 
     this.setCurrentState(state);
@@ -405,7 +394,7 @@ class CircleGraph {
 
   async navigate(options) {
     let path = []
-    this.logger('navigate', options)
+    this.logEvent('navigate', options)
     options = options || {};
     if (this.state === undefined) {
       this.setCurrentState(this.options.start)
@@ -452,7 +441,7 @@ class CircleGraph {
       stepsLeft -= 1;
       $("#GraphNavigation-steps").html(stepsLeft)
       if (termination(this, state) || stepsLeft == 0) {
-        this.logger('done')
+        this.logEvent('done')
         await sleep(500)
         $(".GraphNavigation-currentEdge").removeClass('GraphNavigation-currentEdge')
         if (options.leave_state) {
@@ -509,7 +498,7 @@ class CircleGraph {
 
   async showForcedHovers(start=0, stop) {
     $(this.el).addClass('forced-hovers')
-    this.logger('begin forced hovers')
+    this.logEvent('begin forced hovers')
     let delay = 1000
     // await sleep(delay)
     this.hover(this.options.expansions[0][0])
@@ -523,7 +512,7 @@ class CircleGraph {
       // await getKeyPress()
 
       // this.hideEdge(s1, s2)
-      this.logger('force hover', {s1, s2, duration: delay})
+      this.logEvent('force hover', {s1, s2, duration: delay})
       this.hover(s2)
       // this.showState(s2)
       // await sleep(delay)
@@ -532,7 +521,7 @@ class CircleGraph {
     };
     await sleep(delay)
     $(this.el).removeClass('forced-hovers')
-    this.logger('end forced hovers')
+    this.logEvent('end forced hovers')
   }
 
   clickState(state) {
@@ -560,12 +549,12 @@ class CircleGraph {
   }
 
   showState(state) {
-    this.logger('showState', {state})
+    this.logEvent('showState', {state})
     $(`.GraphNavigation-State-${state}`).addClass('is-visible')
   }
 
   hideState(state) {
-    this.logger('hideState', {state})
+    this.logEvent('hideState', {state})
     $(`.GraphNavigation-State-${state}`).removeClass('is-visible')
   }
 
@@ -585,7 +574,7 @@ class CircleGraph {
 
   async hover(state) {
     // if (!(this.options.hover_edges || this.options.hover_rewards)) return
-    this.logger('hover', {state})
+    this.logEvent('hover', {state})
     // if (this.options.forced_hovers) return
     if (this.options.keep_hover) {
       this.unhoverAll()
@@ -649,9 +638,6 @@ const stateTemplate = (state, options) => {
   let cls = `GraphNavigation-State-${state}`;
   if (options.goal) {
     cls += ' GraphNavigation-goal';
-  }
-  if (options.probe) {
-    cls += ' GraphNavigation-probe';
   }
   return `
   <div class="State GraphNavigation-State ${cls || ''}" style="${options.style || ''}" data-state="${state}">
@@ -855,7 +841,7 @@ function setCurrentState(display_element, graph, state, options) {
   options.edgeShow = options.edgeShow || (() => true);
   // showCurrentEdges enables rendering of current edges/keys. This is off for PathIdentification and AcceptReject.
   options.showCurrentEdges = typeof(options.showCurrentEdges) === 'undefined' ? true : options.showCurrentEdges;
-  const allKeys = _.unique(_.flatten(options.successorKeys));
+  const allKeys = _.uniq(_.flatten(options.successorKeys));
 
   // Remove old classes!
   function removeClass(cls) {

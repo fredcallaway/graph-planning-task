@@ -32,19 +32,28 @@ class Input {
 
 
 class Button extends Input {
-  constructor({text = 'continue', delay = 100, name=undefined} = {}) {
+  constructor({text = 'continue', delay = 100, name=undefined, persistent=true, css = {}, cls=undefined} = {}) {
     super({name})
     this.div.css('text-align', 'center')
-
     this.button = $('<button>', {class: 'btn btn-primary'})
     .text(text)
+    .css(css)
+    .addClass(cls)
     .appendTo(this.div)
 
+    console.log('cls', cls)
+    window.btn = this.button
+
+
     this.clicked = makePromise()
-    this.button.click(() => {
+    this.button.click(async () => {
       this.button.prop('disabled', true)
       logEvent('input.button.click', {name: this.name, text})
-      sleep(delay).then(this.clicked.resolve)
+      await sleep(delay)
+      this.clicked.resolve()
+      if (!persistent) {
+        this.button.remove()
+      }
     })
   }
   promise() {

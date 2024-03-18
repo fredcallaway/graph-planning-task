@@ -17,10 +17,14 @@ async function runExperiment() {
   logEvent('experiment.initialize', {CONDITION, PARAMS})
   enforceScreenSize(1200, 750)
 
-  new CircleGraph(DISPLAY, {"name":"intro","bonus":{"initial":50,"points":50,"points_per_cent":3},"type":"intro","eye_tracking":false,"hover_edges":false,"hover_rewards":false,"points_per_cent":3,"use_n_steps":false,"vary_transition":true,"show_points":false,"forced_hovers":false,"keep_hover":true,"show_hovered_reward":true,"show_predecessors":false,"show_successor_rewards":false,"reveal_by":"hover","graphRenderOptions":{"onlyShowCurrentEdges":false,"width":600,"height":600,"scaleEdgeFactor":1,"fixedXY":[[0.4999999999999999,0],[0.7703204087277986,0.07937323358440929],[0.9548159976772592,0.2922924934990568],[0.9949107209404664,0.5711574191366424],[0.8778747871771291,0.8274303669726426],[0.6408662784207149,0.9797464868072487],[0.35913372157928536,0.9797464868072487],[0.12212521282287114,0.8274303669726428],[0.005089279059533713,0.5711574191366432],[0.0451840023227405,0.2922924934990575],[0.22967959127220117,0.07937323358440945]]},"graph":[[1,8],[2,9],[3,10],[0,4],[1,5],[2,6],[3,7],[4,8],[5,9],[6,10],[0,7]],"rewards":[0,0,0,0,0,0,0,0,0,0,0],"start":0,"n_steps":-1,"consume":true,"show_steps":false})
+  let trial = {"name":"main", "eye_tracking":false,"hover_edges":true,"hover_rewards":true,"points_per_cent":3,"use_n_steps":false,"vary_transition":true,"show_points":false,"forced_hovers":false,"keep_hover":true,"show_hovered_reward":true,"show_predecessors":false,"show_successor_rewards":false,"reveal_by":"hover","graphRenderOptions":{"onlyShowCurrentEdges":false,"width":600,"height":600,"scaleEdgeFactor":1,"fixedXY":[[0.4999999999999999,0],[0.7703204087277986,0.07937323358440929],[0.9548159976772592,0.2922924934990568],[0.9949107209404664,0.5711574191366424],[0.8778747871771291,0.8274303669726426],[0.6408662784207149,0.9797464868072487],[0.35913372157928536,0.9797464868072487],[0.12212521282287114,0.8274303669726428],[0.005089279059533713,0.5711574191366432],[0.0451840023227405,0.2922924934990575],[0.22967959127220117,0.07937323358440945]]},"type":"main","graph":[[],[],[0,10],[],[3,6],[1,8],[],[4,2],[],[7,5],[]],"rewards":[4,-1,-8,-2,-4,2,1,-4,-1,0,8],"start":9,"n_steps":-1,"consume":true,"show_steps":false}
+  let cg = new CircleGraph(trial)
+  await cg.run(DISPLAY)
 
+  // cg.visitState(cg.state, true)
 
-
+  // trial.bonus.addPoints(cg.score)
+  // cg.data.current_bonus = trial.bonus.dollars()
 
   await makePromise()
 

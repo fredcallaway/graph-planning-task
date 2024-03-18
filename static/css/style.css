@@ -1,6 +1,27 @@
+.btn-primary {
+  border: none;
+  color: #F3E6FF;
+  background-color: #731FC0;
+/*  border-color: #4E08B2;*/
+}
+.btn-primary:hover {
+  color: #F3E6FF;
+  background-color: #8924E4;
+/*  border-color: #4E08B2;*/
+}
+.btn-primary:active {
+  background-color: #A082CB;
+  border-color: #4E08B2;
+}
 
 /* template basics */
 
+.absolute-centered {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 #welcome-message {
    max-width: 95%; /* this is mainly an IE 10-11 fix */
    margin: auto;
