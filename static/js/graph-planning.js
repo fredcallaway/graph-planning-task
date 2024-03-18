@@ -5,7 +5,6 @@
 // import jsPsych from '../../lib/jspsych-exported.js';
 // import {bfs} from './graphs.js';
 
-console.log("THIS IS RUNNING")
 const BLOCK_SIZE = 100;
 
 let ensureSign = x => x > 0 ? "+" + x : "" + x
@@ -464,7 +463,6 @@ class CircleGraph {
   }
 
   async showDemo() {
-    console.log(this.options.actions)
     // if (this.options.actions.length == 0) return
 
     let a0 = this.options.actions[0]
@@ -588,7 +586,6 @@ class CircleGraph {
   unhover(state) {
     if (this.options.forced_hovers) return
     if (this.options.keep_hover) return
-    console.log('unhover', state)
     $(`.GraphNavigation-State-${state}`).removeClass('hovered')
 
     if (this.options.show_hovered_reward) this.hideState(state)
@@ -612,7 +609,10 @@ class CircleGraph {
   setReward(state, reward) {
     this.rewards[state] = parseFloat(reward)
     // let graphic = this.options.rewardGraphics[reward]
-    $(`.GraphNavigation-State-${state}`).html(
+
+    // we have to use the default querySelector because this.el hasn't
+    // been added to the DOM yet
+    $(this.el.querySelector(`.GraphNavigation-State-${state}`)).html(
       $('<div>', {'class': 'GraphReward'}).html(`
         ${reward == 0 ? '' : ensureSign(reward)}
       `).addClass(reward < 0 ? "loss" : "win")
