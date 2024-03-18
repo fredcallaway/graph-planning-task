@@ -1,0 +1,490 @@
+/* Graph-related style */
+
+.GraphNavigation-occluder {
+  z-index: 11;
+  background-color: white;
+  opacity: .1;
+}
+
+.forced-hovers {
+
+}
+
+img {
+  pointer-events: none;
+}
+
+.describe-rewards {
+/*  text-align: center;*/
+  margin: auto;
+/*  width: 600px;*/
+/*  border: thin black solid;*/
+}
+.describe-rewards-box {
+/*  float: left;*/
+  display: inline-block;
+  margin: 10 20 20 0;
+  font-weight: bold;
+}
+
+#cgi-top {
+  padding-top: 10;
+}
+#cgi-msg b {
+  font-weight: 400;
+  color: #7946C3;
+}
+.Graph-moves {
+  animation: scale 0.5s ease forwards;
+  font-size: 40pt;
+  font-weight: bold;
+  margin-top: 180px;
+/*  vertical-align: middle*/
+}
+
+@keyframes scale {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    transform: scale(1)
+    opacity: 1;
+  }
+}
+
+.pop {
+  font-weight: bold;
+  animation-fill-mode: forwards;
+/*  text-transform: uppercase;*/
+/*  padding: 0 0.5rem;*/
+  font-size: 40px;
+  animation: zoomup 1.5s ease forwards;
+/*  display: inline-block;*/
+  top: -50px;
+  left: 30px;
+  position: absolute;
+}
+
+@keyframes zoomup {
+  0% {
+    opacity: 0;
+    transform: scale(0.1);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    transform: scale(1) translateY(-50px);
+/*    filter: blur(1px);*/
+    opacity: 0;
+  }
+}
+
+.floatup {
+    animation-fill-mode: forwards;
+    animation: floatup 1s ease forwards;
+}
+
+@keyframes floatup {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-50px);
+/*    filter: blur(1px);*/
+    opacity: 0;
+  }
+}
+
+.loss {
+  color: #9E0002;
+  font-weight: 500;
+}
+.win {
+  color: #0F7003;
+  font-weight: 500;
+}
+
+
+
+.GraphNavigation-header-left {
+  float: left;
+  width: 30%;
+  text-align: left;
+  font-size: 16pt;
+  font-weight: 300;
+/*  vertical-align: middle;*/
+}
+
+.GraphNavigation-header-value {
+  font-size: 20pt;
+  font-weight: 500;
+  display: inline-block;
+  width: 20px;
+/*  vertical-align: middle;*/
+}
+
+/*.GraphNavigation-header-right {
+    float: left;
+    width: 30%;
+    text-align: left;
+}
+.GraphNavigation-header-center {
+    float: left;
+    width: %;
+    text-align: center;
+}*/
+
+
+.GraphTraining-state {
+  display: flex;
+  justify-content: space-around;
+  position: relative;
+  margin: 3rem 0 4rem 0;
+}
+.GraphTraining-stateGoal {
+  /* kind of a hack... */
+  position: absolute;
+  right: 0;
+}
+
+.GraphTraining-other_states{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.GraphTraining-successors {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* GraphNavigation */
+.GraphNavigation {
+  margin: 0 auto;
+}
+
+.GraphNavigation-State.State {
+  border-width: 0;
+
+  z-index: 3;
+  position: absolute;
+
+  margin: 3rem;
+  height: 4rem;
+  width: 4rem;
+}
+
+.GraphNavigation-State.GraphNavigation-visited {
+  border-width: 3px;
+}
+
+.GraphNavigation-State {
+  /* HACK structuring this way so it's easier to have in text. */
+  background-image: url('/static/graph-nav/images/openmoji/2B1B.svg');
+  text-align: center;
+}
+
+.GraphNavigation-edge {
+  height: 2px;
+  transform-origin: left center;
+  position: absolute;
+  background-color: black;
+/*  z-index: 10;*/
+/*  transition: opacity 300ms;*/
+}
+.GraphNavigation-edge.is-faded {
+  background-color: white;
+  z-index: -1;
+/*  background-color: red;*/
+}
+.GraphNavigation-currentEdge {
+/*  opacity: 1 !important;*/
+  transition: background-color 300ms;
+  z-index: 1 !important;
+}
+
+.GraphNavigation-highlight-current-edge .GraphNavigation-currentEdge {
+/*  height: 2px;*/
+  background-color: #F7A100;
+}
+.GraphNavigation-current {
+/*  background-image: url('/static/graph-nav/images/openmoji/2733.svg');*/
+}
+.GraphNavigation-goal {
+/*  background-image: url('/static/graph-nav/images/openmoji/2B50.svg');*/
+}
+.GraphNavigation-probe {
+/*  background-image: url('/static/graph-nav/images/openmoji/2754.svg');*/
+  background-color: white;
+  border: 2px solid black !important;
+  border-radius: 100% !important;
+}
+.GraphNavigation-cue {
+  background-image: url('/static/graph-nav/images/openmoji/2734.svg');
+}
+
+.GraphNavigation.withGraphic .GraphNavigation-State {
+  border: 2px solid black;
+  margin: 1.5rem;
+  height: 7rem;
+  width: 7rem;
+  border-radius: 100%;
+
+  background-image: none;
+  background-color: white;
+}
+.GraphNavigation.withGraphic .GraphNavigation-State-Highlighted {
+  border-color: #8437EE;
+  background-color: #EDE0FF;
+}
+.GraphNavigation.withGraphic .GraphNavigation-current {
+/*  background-image: none;*/
+  background-color: #1B79FF !important;
+}
+
+.GraphNavigation.withGraphic .hovered {
+/*  background-image: none;*/
+  background-color: #B8D8FF;
+}
+
+
+.GraphNavigation.withGraphic .GraphNavigation-State-Highlighted2 {
+  border-color: #ECBB00;
+  background-color: #FFF5C9;
+}
+.GraphNavigation.withGraphic .GraphNavigation-State-Highlighted2.GraphNavigation-current {
+  border-color: #22A61E;
+  background-color: #75DD72;
+}
+
+.GraphNavigation.withGraphic .GraphNavigation-State-Highlighted3 {
+  border-color: #F3C379;
+  background-color: #FFFAF1;
+}
+.GraphNavigation.withGraphic .GraphNavigation-State-Highlighted3.GraphNavigation-current {
+  border-color: #85BA3B;
+  background-color: #ABDA6A;
+}
+
+.GraphNavigation.forced-hovers .GraphNavigation-current {
+/*  background-image: none;*/
+  background-color: #FF6FA0;
+}
+
+.GraphNavigation.withGraphic .GraphNavigation-goal {
+/*  background-image: none;*/
+  background-color: #ffeb3b;
+}
+.GraphNavigation.withGraphic .GraphNavigation-probe {
+/*  background-image: none;*/
+  background-color: #2196f3;
+}
+.GraphNavigation.withGraphic .GraphNavigation-cue {
+/*  background-image: none;*/
+  background-color: #ccc;
+}
+
+.GraphNavigation-arrow {
+/*  z-index: 10;*/
+  position: absolute;
+/*  border: thin red solid;*/
+/*  box-sizing: border-box;*/
+  display: block;
+
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  width: 7rem;
+  height: 7rem;
+  /*border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-bottom: 8px solid black;*/
+}
+.GraphNavigation-currentKey {
+/*  opacity: 1;*/
+}
+
+.GraphNavigation-instruction {
+  height: 120px;
+}
+
+.State {
+  border: 1px solid #555;
+  border-radius: 5px;
+  width: 10rem;
+  line-height: 8rem;
+  font-size: 4rem;
+  font-weight: 400;
+  line-height: 50px;
+  height: 10rem;
+  padding: 0.5rem;
+  box-sizing: border-box;
+  transition: background-color 300ms;
+  margin: 1rem;
+  user-select: none;
+}
+
+.GraphNavigation .State > .GraphReward {
+  display: none;
+}
+.GraphNavigation.withGraphic .State > .GraphReward {
+  display: block;
+}
+
+/*.GraphNavigation.withGraphic .GraphNavigation-current > .GraphReward {
+  display: none;
+}*/
+
+/* Process tracing on rewards */
+.GraphNavigation.hideStates .State > .GraphReward {
+  transition: opacity 100ms;
+  opacity: 0;
+}
+.GraphNavigation.hideStates .State.is-visible > .GraphReward {
+  opacity: 1;
+}
+
+/* Process tracing on edges */
+.GraphNavigation.hideEdges .GraphNavigation-edge {
+  transition: opacity 100ms;
+  opacity: 0;
+}
+.GraphNavigation.hideEdges .GraphNavigation-arrow {
+  transition: opacity 100ms;
+  opacity: 0;
+}
+
+.is-visible {
+  opacity: 1 !important;
+}
+
+.GraphNavigation-terminated {
+/*  transition: background-color 500ms;*/
+/*  background-color: #949494 !important;*/
+  transition: opacity 500ms;
+  opacity: 0 !important;
+}
+
+.SuccState {
+    border: 5px solid greenyellow;
+}
+
+.NonSuccState {
+    border: 5px solid red;
+}
+
+.HighlightedState {
+    border: 5px solid darkblue;
+}
+
+.GraphNavigation.SomeHighlighted .GraphNavigation-edge {
+    background: lightgray;
+}
+
+.GraphNavigation.SomeHighlighted .GraphNavigation-arrow {
+    color: lightgray;
+}
+
+.GraphNavigation-edge.HighlightedEdge {
+    background: black !important;
+}
+
+.GraphNavigation-arrow.HighlightedEdge {
+    color: black !important;
+}
+
+.Peek {
+    font-size: 20px;
+}
+
+.GraphTraining-successors .State:hover {
+/*  cursor: pointer;*/
+  background-color: #ccc;
+}
+
+.PathIdentification-states {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.PathIdentification-selected,
+.PathIdentification-selected:hover {
+  background-color: #bbb !important;
+}
+.PathIdentification-selectable:hover {
+  cursor: pointer;
+  background-color: #ddd;
+}
+
+/* Imports from Blockworld */
+
+.modal {
+    display: block;
+    position: fixed; /* Stay in place */
+    z-index: 10; /* Sit on top */
+    padding-top: 200px; /* Location of the box */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0,0,0); /* Fallback color */
+    background-color: rgba(0,0,0,0.2); /* Black w/ opacity */
+}
+
+.modal-content {
+   background-color: #fefefe;
+   margin: auto;
+   padding: 20px;
+   text-align: center;
+   border: 1px solid #1B79FF;
+   width: 40%;
+}
+
+.jspsych-content {
+  max-width: 100%;
+ margin-top: 0;
+ position: relative;
+}
+
+.legal hr {
+ border-color: #ccc;
+}
+
+/* The timer */
+
+.Timer-progressContainer {
+  display: inline-block;
+  width: 50px;
+  height: 1rem;
+  background-color: #eee;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+.Timer-progress {
+  height: 100%;
+  width: 100%;
+  background-color: rgb(90, 160, 200);
+  background-color: #aaa;
+  transition: transform 1s linear;
+  transform-origin: left;
+  transform: scaleX(0);
+}
+.Timer-progress.progressing {
+  transform: scaleX(1);
+}
+
+@keyframes error {
+  000% { transform: translateX(0px); }
+  025% { transform: translateX(-5px); }
+  050% { transform: translateX(0px); }
+  075% { transform: translateX(+5px); }
+  100% { transform: translateX(0px); }
+}
+
+.animateError {
+  animation: error 150ms 2;
+}

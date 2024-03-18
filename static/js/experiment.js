@@ -1,4 +1,4 @@
-ERROR_EMAIL = 'youremail@bodacious.edu'
+ERROR_EMAIL = 'fredcallaway@gmail.com'
 // this defines 6 conditions (a 2x3 design)
 // make sure to update num_conds in config.txt to reflect any changes you make here
 const PARAMS = conditionParameters(CONDITION, {
@@ -16,6 +16,13 @@ async function runExperiment() {
   // logEvent is how you save data to the database
   logEvent('experiment.initialize', {CONDITION, PARAMS})
   enforceScreenSize(1200, 750)
+
+  new CircleGraph(DISPLAY, {"name":"intro","bonus":{"initial":50,"points":50,"points_per_cent":3},"type":"intro","eye_tracking":false,"hover_edges":false,"hover_rewards":false,"points_per_cent":3,"use_n_steps":false,"vary_transition":true,"show_points":false,"forced_hovers":false,"keep_hover":true,"show_hovered_reward":true,"show_predecessors":false,"show_successor_rewards":false,"reveal_by":"hover","graphRenderOptions":{"onlyShowCurrentEdges":false,"width":600,"height":600,"scaleEdgeFactor":1,"fixedXY":[[0.4999999999999999,0],[0.7703204087277986,0.07937323358440929],[0.9548159976772592,0.2922924934990568],[0.9949107209404664,0.5711574191366424],[0.8778747871771291,0.8274303669726426],[0.6408662784207149,0.9797464868072487],[0.35913372157928536,0.9797464868072487],[0.12212521282287114,0.8274303669726428],[0.005089279059533713,0.5711574191366432],[0.0451840023227405,0.2922924934990575],[0.22967959127220117,0.07937323358440945]]},"graph":[[1,8],[2,9],[3,10],[0,4],[1,5],[2,6],[3,7],[4,8],[5,9],[6,10],[0,7]],"rewards":[0,0,0,0,0,0,0,0,0,0,0],"start":0,"n_steps":-1,"consume":true,"show_steps":false})
+
+
+
+
+  await makePromise()
 
   async function instructions() {
     await new ExampleInstructions().run(DISPLAY)
