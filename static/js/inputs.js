@@ -338,3 +338,162 @@ class CycleViewer {
     })
   }
 }
+
+class Instructions {
+  constructor(options={}) {
+    _.defaults(options, {
+      width: 1000,
+      promptHeight: 100,
+      helpText: DEFAULT_INSTRUCT_HELP
+    })
+
+    this.options = options
+
+    this.div = $('<div>')
+    .css({
+      width: options.width,
+      position: 'relative',
+      margin: 'auto',
+      padding: '10px',
+    })
+
+    let help = $('<button>')
+    .appendTo(this.div)
+    .addClass('btn-help')
+    .text('?')
+    .click(async () => {
+      await Swal.fire({
+          title: 'Help',
+          html: options.helpText,
+          icon: 'info',
+          confirmButtonText: 'Got it!',
+        })
+    })
+
+    this.btnPrev = $('<button>')
+    .addClass('btn')
+    .text('<<')
+    .css({
+      position: 'absolute',
+      top: '20px',
+      left: '30px',
+    })
+    .click(() => this.runPrev())
+    .prop('disabled', true)
+    .appendTo(this.div)
+
+    this.btnNext = $('<button>')
+    .addClass('btn')
+    .text('>>')
+    .css({
+      position: 'absolute',
+      top: '20px',
+      right: '200px',
+    })
+    .click(() => this.runNext())
+    .prop('disabled', true)
+    .appendTo(this.div)
+
+    this.title = $('<h1>')
+    .addClass('text').appendTo(this.div)
+
+    this.prompt = $('<div>')
+    .addClass('text')
+    .css({
+      height: options.promptHeight,
+      marginTop: 20
+    })
+    .appendTo(this.div)
+
+    this.content = $('<div>').appendTo(this.div)
+
+    this.stage = 0
+    this.maxStage = 0
+    this.stages = Object.getOwnPropertyNames(Object.getPrototypeOf(this))
+    .filter(f => f.startsWith('stage'))
+    .map(f => this[f])
+
+    this.completed = makePromise()
+
+  }
+
+  attach(display) {
+    display.empty()
+    this.div.appendTo(display)
+    return this
+  }
+
+  async run(display, stage) {
+    if (display) this.attach(display)
+    if (stage == undefined && urlParams.instruct) {
+      stage = parseInt(urlParams.instruct)
+    }
+    this.runStage(stage ?? 1)
+    await this.completed
+  }
+
+  sleep(ms) {
+    // this allows us to cancel sleeps when the user flips to a new page
+    this._sleep = makePromise()
+    sleep(ms).then(() => this._sleep.resolve())
+    return this._sleep
+  }
+
+  setPrompt(md) {
+    this.prompt.html(markdown(md))
+  }
+  appendPrompt(md) {
+    this.prompt.append(markdown(md))
+  }
+
+  async button(text='continue', opts={}) {
+    _.defaults(opts, {delay: 0})
+    let btn = button(this.prompt, text, opts)
+    await btn.clicked
+    btn.remove()
+  }
+
+  async runStage(n) {
+    logEvent(`instructions.runStage.${n}`, {stage: this.stages[n-1].name})
+    this._sleep?.reject()
+    this.prompt.empty()
+    this.content.empty()
+    this.content.css({opacity: 1}) // just to be safe
+    this.maxStage = Math.max(this.maxStage, n)
+    this.stage = n
+    this.btnNext.prop('disabled', this.stage >= this.maxStage)
+    this.btnPrev.prop('disabled', this.stage <= 1)
+    this.title.text(`Instructions (${this.stage}/${this.stages.length})`)
+
+    await this.stages[n-1].bind(this)()
+    if (this.stage == n) {
+      // check to make sure we didn't already move forward
+      this.enableNext()
+    }
+  }
+
+  runNext() {
+    saveData()
+    logEvent('instructions.runNext')
+    this.btnNext.removeClass('btn-pulse')
+    if (this.stage == this.stages.length) {
+      logEvent('instructions.completed')
+      psiturk.finishInstructions();
+      this.completed.resolve()
+      this.div.remove()
+    } else {
+      this.runStage(this.stage + 1)
+    }
+  }
+
+  runPrev() {
+    logEvent('instructions.runPrev')
+    this.runStage(this.stage - 1)
+  }
+
+  enableNext() {
+    this.btnNext.addClass('btn-pulse')
+    this.maxStage = this.stage + 1
+    this.btnNext.prop('disabled', false)
+  }
+}
