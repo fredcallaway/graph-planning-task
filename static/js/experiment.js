@@ -31,20 +31,22 @@ async function runExperiment() {
   };
   updateExisting(params, urlParams)
   psiturk.recordUnstructuredData('params', params);
+  const trials = _.mapValues(config.trials, block => block.map(t => ({...params, ...t})))
+  // makeGlobal({config, params, trials})
+
 
   // logEvent is how you save data to the database
   logEvent('experiment.initialize', {CONDITION, config})
   enforceScreenSize(1000, 750)
-  DISPLAY.css({width: 800})
+  DISPLAY.css({width: 1000})
 
 
   async function instructions() {
-    await new GraphInstructions().run(DISPLAY)
+    await new GraphInstructions({trials}).run(DISPLAY)
   }
 
   async function main() {
     DISPLAY.empty()
-    let trials = config.trials.main
     let top = new TopBar({
       nTrial: trials.length,
       height: 70,
@@ -56,7 +58,7 @@ async function runExperiment() {
 
     let workspace = $('<div>').appendTo(DISPLAY)
 
-    for (let trial of trials) {
+    for (let trial of trials.main) {
       workspace.empty()
       // you will probably want to define a more interesting task here
       // or in a separate file (make sure to include it in exp.html)
@@ -96,7 +98,7 @@ async function runExperiment() {
   // using runTimeline is optional, but it allows you to jump to different blocks
   // with url parameters, e.g. http://localhost:8000/?block=main
   await runTimeline(
-    // instructions,
+    instructions,
     main,
     debrief
   )

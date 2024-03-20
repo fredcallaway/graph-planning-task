@@ -341,13 +341,11 @@ class CycleViewer {
 
 class Instructions {
   constructor(options={}) {
-    _.defaults(options, {
+    this.options = _.defaults(options, {
       width: 1000,
       promptHeight: 100,
       helpText: DEFAULT_INSTRUCT_HELP
     })
-
-    this.options = options
 
     this.div = $('<div>')
     .css({
@@ -376,7 +374,7 @@ class Instructions {
     .css({
       position: 'absolute',
       top: '20px',
-      left: '30px',
+      left: '0px',
     })
     .click(() => this.runPrev())
     .prop('disabled', true)
@@ -388,14 +386,14 @@ class Instructions {
     .css({
       position: 'absolute',
       top: '20px',
-      right: '200px',
+      right: '0px',
     })
     .click(() => this.runNext())
     .prop('disabled', true)
     .appendTo(this.div)
 
-    this.title = $('<h1>')
-    .addClass('text').appendTo(this.div)
+    this.textDiv = $("<div>").css({marginLeft: 50}).appendTo(this.div)
+    this.title = $('<h1>').addClass('text').appendTo(this.textDiv)
 
     this.prompt = $('<div>')
     .addClass('text')
@@ -403,7 +401,7 @@ class Instructions {
       height: options.promptHeight,
       marginTop: 20
     })
-    .appendTo(this.div)
+    .appendTo(this.textDiv)
 
     this.content = $('<div>').appendTo(this.div)
 
@@ -453,11 +451,20 @@ class Instructions {
     btn.remove()
   }
 
+  skipNextClear() {
+    this.skipNext = true
+  }
+
+
   async runStage(n) {
     logEvent(`instructions.runStage.${n}`, {stage: this.stages[n-1].name})
     this._sleep?.reject()
-    this.prompt.empty()
-    this.content.empty()
+    if (this.skipNext) {
+      this.skipNext = false
+    } else {
+      this.prompt.empty()
+      this.content.empty()
+    }
     this.content.css({opacity: 1}) // just to be safe
     this.maxStage = Math.max(this.maxStage, n)
     this.stage = n

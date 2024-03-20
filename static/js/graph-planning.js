@@ -63,6 +63,7 @@ class CircleGraph {
       show_points: true,
       show_successor_rewards: true,
       keep_hover: true,
+      revealed: false,
     })
     // successorKeys:  options.graphRenderOptions.successorKeys
     this.trialId = crypto.randomUUID()
@@ -113,7 +114,9 @@ class CircleGraph {
   }
 
   attach(div) {
+    div.empty()
     this.root.appendTo(div)
+    return this
   }
 
   async run(display) {
@@ -121,8 +124,11 @@ class CircleGraph {
 
     this.setCurrentState(this.options.start)
     await this.showStartScreen()
-    await this.plan()
+    if (!this.options.revealed) {
+      await this.plan()
+    }
     await this.navigate()
+    return this
   }
 
   logEvent(event, info={}) {
@@ -144,8 +150,8 @@ class CircleGraph {
     this.logEvent('showGraph')
     // this.setupEyeTracking()
 
-    if (this.options.hover_rewards) this.el.classList.add('hideStates');
-    if (this.options.hover_edges) this.el.classList.add('hideEdges');
+    if (!this.options.revealed && this.options.hover_rewards) this.el.classList.add('hideStates');
+    if (!this.options.revealed && this.options.hover_edges) this.el.classList.add('hideEdges');
     $(`.ShadowState .GraphReward`).remove()
     if (!this.options.show_steps) {
       $("#gn-steps").hide()
@@ -276,6 +282,15 @@ class CircleGraph {
       });
     }
 
+    if (!intro) {
+      await this.exitImaginationButton()
+    }
+
+    // this.unhoverAll()
+    // await sleep(100)
+  }
+
+  async exitImaginationButton() {
     let btn = button(this.graphContainer, 'exit imagination mode', {
       post_delay: 0,
       pre_delay: .5,
@@ -291,9 +306,6 @@ class CircleGraph {
     $('.GraphNavigation').css('opacity', 1)
     $(`.GraphNavigation-State`).removeClass('PathIdentification-selectable')
     $('.GraphNavigation-arrow,.GraphReward,.GraphNavigation-edge').css('transition', '')
-
-    // this.unhoverAll()
-    // await sleep(100)
   }
 
   setCurrentState(state, options) {
