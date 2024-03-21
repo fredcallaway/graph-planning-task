@@ -253,7 +253,7 @@ class CircleGraph {
   }
 
   async plan(intro=false) {
-    this.logEvent('begin imagination mode')
+    this.logEvent('graph.imagination.start')
     if (this.options.actions) return  // demo mode
     // don't double up the event listeners
     if (this.planningPhaseActive) return
@@ -263,7 +263,7 @@ class CircleGraph {
 
 
     let transition = '300ms'
-    let eventType = 'mouseover'
+    let eventType = 'mouseenter'
     if (this.options.reveal_by == 'click') {
       transition = '500ms'
       eventType = 'click'
@@ -282,25 +282,38 @@ class CircleGraph {
     }
 
     if (!intro) {
-      await this.exitImaginationButton()
+      await this.enableExitImagination()
     }
 
     // this.unhoverAll()
     // await sleep(100)
   }
 
-  async exitImaginationButton() {
-    let btn = button(this.graphContainer, 'exit imagination mode', {
-      post_delay: 0,
-      pre_delay: .5,
-      persistent: true,
-      cls: 'absolute-centered',
-      persistent: false
-    })
+  async enableExitImagination() {
 
-    // this.showGraph()
-    await btn.promise()
-    this.logEvent('exit imagination mode')
+    let stateDiv = $(`.GraphNavigation-State-${this.state}`)
+    let ready = makePromise()
+
+    let label = $('<span>').appendTo(stateDiv)
+    .css({
+      fontSize: 14,
+      color: 'white',
+      transition: 'opacity 100ms',
+      opacity: 0,
+    })
+    .addClass('absolute-centered')
+    .html('ready?')
+
+    stateDiv.on('mouseenter', () => label.css('opacity', 1))
+    .on('mouseleave', () => label.css('opacity', 0))
+    .on('click', async () => {
+      ready.resolve()
+      label.css('opacity', 0)
+      await sleep(100)
+      label.remove()
+    })
+    await ready
+    this.logEvent('graph.imagination.end')
     this.planningPhaseActive = false
     $('.GraphNavigation').css('opacity', 1)
     $(`.GraphNavigation-State`).removeClass('PathIdentification-selectable')
@@ -552,7 +565,7 @@ class CircleGraph {
   }
 
   showState(state) {
-    this.logEvent('showState', {state})
+    // this.logEvent('showState', {state})
     $(`.GraphNavigation-State-${state}`).addClass('is-visible')
   }
 
@@ -577,7 +590,7 @@ class CircleGraph {
 
   async hover(state) {
     // if (!(this.options.hover_edges || this.options.hover_rewards)) return
-    this.logEvent('hover', {state})
+    // this.logEvent('hover', {state})
     // if (this.options.forced_hovers) return
     if (this.options.keep_hover) {
       this.unhoverAll()

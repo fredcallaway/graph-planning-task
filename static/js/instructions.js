@@ -274,7 +274,7 @@ class GraphInstructions extends Instructions {
      let hoveredAll = makePromise();
 
      cg.logger_callback = (event, info) => {
-       if (!done && event == 'hover') {
+       if (!done && event == 'imagine') {
          hovered.add(info.state)
          console.log('callback', String(info.state))
          if (cg.options.show_successor_rewards && !reminded && terminal.includes(String(info.state))) {
@@ -304,10 +304,9 @@ class GraphInstructions extends Instructions {
      await hoveredAll
 
      this.setPrompt(`
-       When you're ready to select your moves, click the purple button
-       in the middle to leave imagination mode.
+       When you're ready to select your moves, click on your current location (the blue one).
     `)
-     await cg.exitImaginationButton()
+     await cg.enableExitImagination()
      this.setPrompt(`
        Try to get as many points as you can!
     `)
