@@ -96,10 +96,11 @@ function saveData() {
       resolve('local');
       return;
     }
-    const timeout = delay(10000, () => {
+    const timeout = setTimeout(function() {
       logEvent('data.timeout')
       reject('timeout');
-    });
+    }, 10000);
+
     psiturk.saveData({
       error: () => {
         clearTimeout(timeout);
