@@ -1,4 +1,5 @@
 ERROR_EMAIL = 'fredcallaway@gmail.com'
+PROLIFIC_CODE = 'CITBBJYS'
 
 PARAMS = undefined
 
