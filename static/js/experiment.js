@@ -21,7 +21,7 @@ async function runExperiment() {
     show_predecessors: false,
     show_successor_rewards: false,
     reveal_by: 'hover',
-    // score_limit: 3,
+    score_limit: 200,
     // time_limit: 600,
   }, config.parameters)
   console.log('config.parameters', config.parameters)
@@ -35,13 +35,14 @@ async function runExperiment() {
   };
   updateExisting(PARAMS, urlParams)
   psiturk.recordUnstructuredData('PARAMS', PARAMS);
+
   const trials = _.mapValues(config.trials, block => block.map(t => ({...PARAMS, ...t})))
   const bonus = new Bonus({points_per_cent: PARAMS.points_per_cent, initial: 0})
   // makeGlobal({config, PARAMS, trials})
 
 
   // logEvent is how you save data to the database
-  logEvent('experiment.initialize', {CONDITION, config})
+  logEvent('experiment.initialize', {condition: CONDITION, params: PARAMS, trials: config.trials})
   enforceScreenSize(1000, 780)
   DISPLAY.css({width: 1000})
 

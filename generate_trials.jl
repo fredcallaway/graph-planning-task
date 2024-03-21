@@ -246,11 +246,11 @@ dest = "static/json/config"
 rm(dest, recursive=true)
 mkpath(dest)
 foreach(enumerate(subj_trials)) do (i, trials)
-    if iseven(i)
-        parameters = (;points_per_cent, time_limit=300)
-    else
-        parameters = (;score_limit=250)
-    end
+    # if iseven(i)
+    #     parameters = (;points_per_cent, time_limit=300)
+    # else
+    #     parameters = (;score_limit=250)
+    # end
 
     write("$dest/$i.json", json((;parameters, trials)))
     println("$dest/$i.json")

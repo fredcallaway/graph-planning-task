@@ -40,8 +40,8 @@ Make sure you're logged into the correct Heroku account using the Heroku CLI (us
 
 Create a new app and add a Postgres database. **Note: these commands must be run from the project directory** (the one containing this README.md). You should probably change the name of your app to something less silly.
 ```
-heroku create dizzydangdoozle --buildpack heroku/python
-heroku git:remote -a dizzydangdoozle
+heroku create graph-planning --buildpack heroku/python
+heroku git:remote -a graph-planning
 heroku addons:create heroku-postgresql
 ```
 You can confirm that the heroku site has been created with the `heroku domains`, which will print the domain of your shiny new website!
