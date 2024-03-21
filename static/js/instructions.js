@@ -175,7 +175,7 @@ class GraphInstructions extends Instructions {
       _What's in it for me?_ you might be asking. Well, we thought of that!
       Unlike other experiments you might have done, we don't have a fixed number of rounds.
     `)
-    // await this.button()
+    await this.button()
     let goal
     if (PARAMS.time_limit) {
       goal = 'earn the most money'
@@ -205,7 +205,7 @@ class GraphInstructions extends Instructions {
     // I suggest keeping something like this here to warn participants to not refresh
 
     this.setPrompt(`
-      **That's it!** You're ready to begin the main section of the experiment.
+      That's it! You're ready to begin the main section of the experiment.
 
       <br><br>
       <div class="alert alert-danger">
@@ -301,7 +301,7 @@ class GraphInstructions extends Instructions {
      let hoveredAll = makePromise();
 
      cg.logger_callback = (event, info) => {
-       if (!done && event == 'imagine') {
+       if (!done && event == 'graph.imagine') {
          hovered.add(info.state)
          console.log('callback', String(info.state))
          if (cg.options.show_successor_rewards && !reminded && terminal.includes(String(info.state))) {

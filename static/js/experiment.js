@@ -64,7 +64,7 @@ async function runExperiment() {
     score.addPoints(50)
     bonus.addPoints(50)
 
-    if (local) PARAMS.time_limit = 300
+    // if (local) PARAMS.time_limit = 300
 
     let timer = new Timer({label: 'Time Left: ', time: PARAMS.time_limit})
     if (PARAMS.time_limit) {
