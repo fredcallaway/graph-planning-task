@@ -224,13 +224,6 @@ class CircleGraph {
     this.showGraph()
   }
 
-  showEndScreen(msg) {
-    this.el.innerHTML = `
-      <p >${msg || ''}Press spacebar to continue.</p>
-    `;
-    return waitForSpace();
-  }
-
   setupEyeTracking() {
     this.data.state_boxes = {}
     this.graph.states.forEach(s => {
@@ -513,7 +506,7 @@ class CircleGraph {
       // this.showEdge(s1, s2)
       await sleep(delay)
       this.highlight(s2)
-      await this.hoverState(s2)
+      await this.hoverStatePromise(s2)
       this.unhighlight(s2)
       // await getKeyPress()
 
@@ -530,7 +523,7 @@ class CircleGraph {
     this.logEvent('graph.forced.end')
   }
 
-  clickState(state) {
+  clickStatePromise(state) {
     return new Promise((resolve, reject) => {
       $(`.GraphNavigation-State-${state}`).css('cursor', 'pointer')
       $(`.GraphNavigation-State-${state}`).one('click', () => {
@@ -540,7 +533,7 @@ class CircleGraph {
     })
   }
 
-  hoverState(state) {
+  hoverStatePromise(state) {
     return new Promise((resolve, reject) => {
       $(`.GraphNavigation-State-${state}`).one('mouseover', () => {
         resolve()
@@ -906,15 +899,6 @@ function setCurrentState(display_element, graph, state, options) {
   });
 }
 
-async function waitForSpace() {
-  return documentEventPromise('keypress', (e) => {
-    if (e.keyCode == 32) {
-      e.preventDefault();
-      return true;
-    }
-  });
-}
-
 function renderKeyInstruction(keys) {
   function renderInputInstruction(inst) {
     return `<span style="border: 1px solid black; border-radius: 3px; padding: 3px; font-weight: bold; display: inline-block;">${inst}</span>`;
@@ -926,18 +910,3 @@ function renderKeyInstruction(keys) {
     return `${renderInputInstruction('No (q)')} &nbsp; ${renderInputInstruction('Yes (p)')}`;
   }
 }
-
-// addPlugin('main', trialErrorHandling(async function main(root, trial) {
-//   // trial.n_steps = -1;
-//   cg = new CircleGraph($(root), trial);
-//   await cg.showStartScreen(trial)
-//   cg.setCurrentState(cg.options.start)
-//   // cg.visitState(cg.state, true)
-//   await cg.plan()
-//   await cg.navigate()
-//   trial.bonus.addPoints(cg.score)
-//   cg.data.current_bonus = trial.bonus.dollars()
-//   $(root).empty()
-//   jsPsych.finishTrial(cg.data)
-// }));
-
