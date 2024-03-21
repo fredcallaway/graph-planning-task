@@ -188,13 +188,14 @@ function alert_failure(opts = {}) {
     confirmButtonText: 'Continue',
     ...opts
   })
-
 }
 
 class TopBar {
     constructor(options = {}) {
     _.defaults(options, {
       nTrial: undefined,
+      // score: false,
+      // time: -1,
       width: 1100,
       height: 100,
       help: '',
@@ -262,6 +263,99 @@ class TopBar {
     this.setCounter(this.count + 1)
   }
 }
+
+
+class Timer {
+  constructor(options={}) {
+    _.defaults(options, {
+      time: 10,
+      countUp: false,
+      label: '',
+    })
+    Object.assign(this, options)
+    this.span = null
+    this.done = false
+  }
+
+
+  attach(div) {
+    this.span = $('<span>').appendTo(div).css({
+      fontSize: 24
+    })
+    this.css = (x) => this.span.css(x)
+    this.updateDisplay()
+    return this
+  }
+
+  updateDisplay() {
+    this.span.html(this.label + this.fmtTime(this.time))
+  }
+
+  fmtTime(secs) {
+    var minutes = Math.floor((secs) / 60);
+    var seconds = secs - (minutes * 60);
+
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    return minutes+':'+seconds;
+  }
+
+  pause() {
+    this.paused = true
+  }
+  unpause() {
+    this.paused = false
+  }
+
+  async run(display) {
+    logEvent('timer.start')
+    if (display) this.attach(display)
+    while (this.time != 0) {
+      await sleep(1000)
+      if (this.paused) continue
+      this.time -= 1
+      if (this.span) {
+        this.updateDisplay()
+      }
+    }
+    this.done = true
+    logEvent('timer.done')
+  }
+};
+
+class Score {
+  constructor(options={}) {
+    _.defaults(options, {
+      score: 0,
+      label: 'Score: ',
+      bonus: null
+    })
+    Object.assign(this, options)
+    logEvent('score.initialize', {score: this.score})
+  }
+
+  attach(div) {
+    this.span = $('<span>').appendTo(div).css({
+      fontSize: 24
+    })
+    this.css = (x) => this.span.css(x)
+    this.updateDisplay()
+    return this
+  }
+
+  updateDisplay() {
+    this.span.html(this.label + this.score)
+  }
+
+  addPoints(points) {
+    this.score += points
+    logEvent('score.add', {score: this.score, points})
+    this.updateDisplay()
+    if (this.bonus) {
+      this.bonus.addPoints(points)
+    }
+  }
+};
 
 
 class CycleViewer {

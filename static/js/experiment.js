@@ -51,23 +51,36 @@ async function runExperiment() {
       nTrial: trials.length,
       height: 70,
       width: 800,
-      help: `
-        Write some help text here.
-      `
     }).prependTo(DISPLAY)
+
+    let score = new Score().attach(top.div)
+    registerEventCallback(info => {
+      if (info.event == 'graph.addPoints') {
+        score.addPoints(info.points)
+      }
+    })
+
+    let timer = new Timer({label: 'Time Left: '}).attach(top.div)
+    timer.css({float: 'right'})
+    let done = timer.run()
+
+    function checkDone() {
+      if (params.score_limit && score.score > params.score_limit) {
+        return true
+      } else if (params.time_limit && timer.done) {
+        return true
+      }
+      return false
+    }
 
     let workspace = $('<div>').appendTo(DISPLAY)
 
     for (let trial of trials.main) {
+      if (checkDone()) break
       workspace.empty()
-      // you will probably want to define a more interesting task here
-      // or in a separate file (make sure to include it in exp.html)
       let cg = new CircleGraph({...params, ...trial})
       await cg.run(workspace)
-
-      top.incrementCounter()
       saveData()
-
     }
   }
 

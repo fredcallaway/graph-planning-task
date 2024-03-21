@@ -128,7 +128,6 @@ class CircleGraph {
       await this.plan()
     }
     await this.navigate()
-    return this
   }
 
   logEvent(event, info={}) {
@@ -353,7 +352,8 @@ class CircleGraph {
     });
   }
 
-  addScore(points, state) {
+  addPoints(points, state) {
+    logEvent('graph.addPoints', {points})
     if (points == 0) {
       return
     }
@@ -384,7 +384,7 @@ class CircleGraph {
 
     this.setCurrentState(state);
     if (!initial) {
-      this.addScore(this.rewards[state], state)
+      this.addPoints(this.rewards[state], state)
       if (this.options.consume) {
         this.rewards[state] = 0
         // let cls = (points < 0) ? "loss" : "win"

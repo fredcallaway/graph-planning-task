@@ -4,6 +4,10 @@ function makeGlobal(obj) {
   Object.assign(window, obj)
 }
 
+
+
+
+
 class Bonus {
   constructor(options) {
     let {points_per_cent, initial = 0} = options;
@@ -16,7 +20,6 @@ class Bonus {
   }
   addPoints(points) {
     this.points += points
-    console.log('addPoints', this.points, points)
   }
   dollars() {
     let cents = Math.max(0, Math.round(this.points / this.points_per_cent))
