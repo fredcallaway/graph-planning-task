@@ -6,7 +6,7 @@ const DEFAULT_INSTRUCT_HELP= `
 
 class GraphInstructions extends Instructions {
   constructor(options={}) {
-    super({promptHeight: 80, width: 800})
+    super({...options, promptHeight: 100, width: 800})
     this.trials = options.trials
     window.instruct = this
   }
@@ -171,14 +171,41 @@ class GraphInstructions extends Instructions {
   }
 
   async stage_incentives() {
-    
+    this.setPrompt(`
+      _What's in it for me?_ you might be asking. Well, we thought of that!
+      Unlike other experiments you might have done, we don't have a fixed number of rounds.
+    `)
+    // await this.button()
+    let goal
+    if (PARAMS.time_limit) {
+      goal = 'earn the most money'
+      let time_limit = PARAMS.time_limit / 60
+      this.setPrompt(`
+        Instead, you will have **${time_limit} minutes** to collect **as many points as you can.**
+        At the end of the experiment, we will convert those points into a cash bonus:
+        **${this.options.bonus.describeScheme()}.**
+      `)
+      await this.button()
+    } else {
+      goal = 'finish the study as quickly as possible'
+      this.setPrompt(`
+        Instead, you will do as **as many rounds as it takes** to earn **${PARAMS.score_limit} points.**
+      `)
+      await this.button()
+    }
+    this.setPrompt(`
+      To ${goal}, you'll have to balance making fast choices and selecting the
+      best possible path.
+    `)
+    await this.button()
+    this.runNext()
   }
 
   async stage_final() {
     // I suggest keeping something like this here to warn participants to not refresh
 
     this.setPrompt(`
-      That's it! You're ready to begin the main section of the experiment.
+      **That's it!** You're ready to begin the main section of the experiment.
 
       <br><br>
       <div class="alert alert-danger">

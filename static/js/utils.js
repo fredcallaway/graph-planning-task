@@ -11,9 +11,9 @@ function makeGlobal(obj) {
 class Bonus {
   constructor(options) {
     let {points_per_cent, initial = 0} = options;
-    invariant(typeof(points_per_cent) == 'number',
+    assert(typeof(points_per_cent) == 'number',
       `points_per_cent must be a number, but is ${JSON.stringify(points_per_cent)}`)
-    invariant(typeof(initial) == 'number',
+    assert(typeof(initial) == 'number',
       `initial must be a number, but is ${JSON.stringify(points_per_cent)}`)
     this.points = this.initial = initial
     this.points_per_cent = points_per_cent
@@ -26,7 +26,7 @@ class Bonus {
     return cents / 100
   }
   reportBonus() {
-    return `Your current bonus is $${this.dollars().toFixed('2')} (${this.points} points)`
+    return `Your current bonus is $${this.dollars().toFixed('2')}`
   }
   describeScheme() {
     return "one cent for every " + numString(this.points_per_cent, "point", {skip_one: true})

@@ -225,7 +225,7 @@ function make_trials(; )
         practice_revealed = [sample_problem(;kws...) for i in 1:2],
         intro_hover = [sample_problem(;kws...)],
         practice_hover = [sample_problem(;kws...) for i in 1:2],
-        main = [sample_problem(;kws...) for i in 1:60],
+        main = [sample_problem(;kws...) for i in 1:100],
         # calibration = intro,
         # eyetracking = [sample_problem(;kws..., n_steps) for n_steps in shuffle(repeat(3:5, 7))]
     )
@@ -246,25 +246,27 @@ dest = "static/json/config"
 rm(dest, recursive=true)
 mkpath(dest)
 foreach(enumerate(subj_trials)) do (i, trials)
-    parameters = (;points_per_cent)
+    if iseven(i)
+        parameters = (;points_per_cent, time_limit=300)
+    else
+        parameters = (;score_limit=250)
+    end
+
     write("$dest/$i.json", json((;parameters, trials)))
     println("$dest/$i.json")
-
 end
 
 # %% --------
 
 value(t::ForceHoverTrial) = value(t.p)
 
-bonus = map(subj_trials) do trials
+val = flatmap(subj_trials) do trials
     trials = mapreduce(vcat, [:main, :eyetracking]) do t
         get(trials, t, [])
     end
-    points = 50 + sum(value.(trials))
-    points / (points_per_cent * 100)
+    value.(trials)
 end
 
 using UnicodePlots
-if length(bonus) > 1
-    display(histogram(bonus, nbins=10, vertical=true, height=10))
-end
+display(histogram(val, nbins=50, vertical=true, height=10))
+

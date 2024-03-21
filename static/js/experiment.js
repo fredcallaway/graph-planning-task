@@ -1,13 +1,13 @@
 ERROR_EMAIL = 'fredcallaway@gmail.com'
 
-
+PARAMS = undefined
 
 async function runExperiment() {
   // stimuli = await $.getJSON(`static/json/${CONDITION}.json`)
 
   // load configuration and set up parameters
   const config = await $.getJSON(`static/json/config/${CONDITION+1}.json`)
-  const params = _.merge({
+  PARAMS = _.merge({
     eye_tracking: false,
     hover_edges: true,
     hover_rewards: true,
@@ -20,29 +20,34 @@ async function runExperiment() {
     show_hovered_reward: true,
     show_predecessors: false,
     show_successor_rewards: false,
-    reveal_by: 'hover'
+    reveal_by: 'hover',
+    // score_limit: 3,
+    // time_limit: 600,
   }, config.parameters)
-  params.graphRenderOptions = {
+  console.log('config.parameters', config.parameters)
+
+  PARAMS.graphRenderOptions = {
     onlyShowCurrentEdges: false,
     width: 600,
     height: 600,
     scaleEdgeFactor: 1,
     fixedXY: circleXY(config.trials.main[0].graph.length)
   };
-  updateExisting(params, urlParams)
-  psiturk.recordUnstructuredData('params', params);
-  const trials = _.mapValues(config.trials, block => block.map(t => ({...params, ...t})))
-  // makeGlobal({config, params, trials})
+  updateExisting(PARAMS, urlParams)
+  psiturk.recordUnstructuredData('PARAMS', PARAMS);
+  const trials = _.mapValues(config.trials, block => block.map(t => ({...PARAMS, ...t})))
+  const bonus = new Bonus({points_per_cent: PARAMS.points_per_cent, initial: 0})
+  // makeGlobal({config, PARAMS, trials})
 
 
   // logEvent is how you save data to the database
   logEvent('experiment.initialize', {CONDITION, config})
-  enforceScreenSize(1000, 750)
+  enforceScreenSize(1000, 780)
   DISPLAY.css({width: 1000})
 
 
   async function instructions() {
-    await new GraphInstructions({trials}).run(DISPLAY)
+    await new GraphInstructions({trials, bonus}).run(DISPLAY)
   }
 
   async function main() {
@@ -54,32 +59,54 @@ async function runExperiment() {
     }).prependTo(DISPLAY)
 
     let score = new Score().attach(top.div)
+    score.addPoints(50)
+    bonus.addPoints(50)
+
+    if (local) PARAMS.time_limit = 300
+
+    let timer = new Timer({label: 'Time Left: ', time: PARAMS.time_limit})
+    if (PARAMS.time_limit) {
+      timer.attach(top.div)
+      timer.css({float: 'right'})
+      timer.pause()
+      timer.run()
+    }
+
     registerEventCallback(info => {
       if (info.event == 'graph.addPoints') {
         score.addPoints(info.points)
+        bonus.addPoints(info.points)
+      }
+      else if (info.event == 'graph.done') {
+        timer.pause()
+      }
+      else if (info.event == 'graph.showGraph') {
+        timer.unpause()
+        // 2:18 2:24
       }
     })
 
-    let timer = new Timer({label: 'Time Left: '}).attach(top.div)
-    timer.css({float: 'right'})
-    let done = timer.run()
-
     function checkDone() {
-      if (params.score_limit && score.score > params.score_limit) {
+      if (PARAMS.score_limit && score.score > PARAMS.score_limit) {
         return true
-      } else if (params.time_limit && timer.done) {
+      } else if (PARAMS.time_limit && timer.done) {
         return true
       }
       return false
     }
 
     let workspace = $('<div>').appendTo(DISPLAY)
-
     for (let trial of trials.main) {
       if (checkDone()) break
       workspace.empty()
-      let cg = new CircleGraph({...params, ...trial})
+
+      let start_message = PARAMS.score_limit ?
+        `You're ${PARAMS.score_limit - score.score} points away from finishing` :
+        this.options.bonus.reportBonus()
+      let cg = new CircleGraph({...PARAMS, ...trial, start_message})
       await cg.run(workspace)
+      timer.pause()
+
       saveData()
     }
   }

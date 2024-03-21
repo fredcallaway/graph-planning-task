@@ -301,9 +301,11 @@ class Timer {
   }
 
   pause() {
+    logEvent('timer.pause')
     this.paused = true
   }
   unpause() {
+    logEvent('timer.unpause')
     this.paused = false
   }
 
@@ -490,7 +492,7 @@ class Instructions {
     this.title = $('<h1>').addClass('text').appendTo(this.textDiv)
 
     this.prompt = $('<div>')
-    .addClass('text')
+    .addClass('text instructions')
     .css({
       height: options.promptHeight,
       marginTop: 20

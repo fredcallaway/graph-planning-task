@@ -1,10 +1,3 @@
-// import {getKeyPress, numString, markdown, makePromise, parseHTML, trialErrorHandling, graphicsUrl, sleep, addPlugin, documentEventPromise, invariant, makeButton} from './utils.js';
-// import {Graph} from './graphs.js';
-// import _ from '../../lib/underscore-min.js';
-// import $ from '../../lib/jquery-min.js';
-// import jsPsych from '../../lib/jspsych-exported.js';
-// import {bfs} from './graphs.js';
-
 const BLOCK_SIZE = 100;
 
 let ensureSign = x => x > 0 ? "+" + x : "" + x
@@ -137,16 +130,16 @@ class CircleGraph {
   }
 
   highlight(state, postfix='') {
-    this.logEvent('highlight', {state})
+    this.logEvent('graph.highlight', {state})
     $(`.GraphNavigation-State-${state}`).addClass(`GraphNavigation-State-Highlighted${postfix}`)
   }
   unhighlight(state, postfix='') {
-    this.logEvent('unhighlight', {state})
+    this.logEvent('graph.unhighlight', {state})
     $(`.GraphNavigation-State-${state}`).removeClass(`GraphNavigation-State-Highlighted${postfix}`)
   }
 
   async showGraph() {
-    this.logEvent('showGraph')
+    this.logEvent('graph.showGraph')
     // this.setupEyeTracking()
 
     if (!this.options.revealed && this.options.hover_rewards) this.el.classList.add('hideStates');
@@ -174,6 +167,7 @@ class CircleGraph {
       this.showGraph()
       return
     }
+    this.logEvent('graph.showStartScreen')
     if (this.options.actions) {
       $('<div>')
       .addClass('pressspace')
@@ -199,29 +193,25 @@ class CircleGraph {
       return
     }
 
-    if (this.options.bonus) {
-      $('<p>')
-      .addClass('Graph-bonus')
-      .css({
-        // 'position': 'absolute',
-        'font-size': 20,
-        // 'width': 500,
-        'margin-top': 180,
-        'margin-bottom': -125,
-        // 'font-weight': 'bold'
-      })
-      .text(trial.bonus.reportBonus())
-      .appendTo(this.root)
+    this.graphContainer.css({border: 'thin white solid'}) // WTF why does this fix positioning??
+    let msg = $('<p>')
+
+    if (this.options.start_message) {
+      msg
+      .css({marginTop: 120})
+      .appendTo(this.graphContainer)
+      .text(this.options.start_message)
     }
 
-    await button(this.graphContainer, 'start', {
+    await button(this.root, 'start', {
       post_delay: 0,
       persistent: false,
         cls: 'absolute-centered',
     }).promise()
     // .css({marginTop: '210px'})
 
-    $('.Graph-bonus').remove()
+    msg.remove()
+
     await sleep(200)
     if (this.options.n_steps > 0) {
       let moves = $('<p>')
@@ -275,7 +265,7 @@ class CircleGraph {
       el.classList.add('PathIdentification-selectable')
       el.addEventListener(eventType, (e) => {
         if (this.planningPhaseActive) {
-          this.logEvent('imagine', {state})
+          this.logEvent('graph.imagine', {state})
           this.hover(state)
         }
       });
@@ -392,7 +382,7 @@ class CircleGraph {
 
   async visitState(state, initial=false) {
     assert(typeof(1) == 'number')
-    this.logEvent('visit', {state, initial})
+    this.logEvent('graph.visit', {state, initial})
     this.onStateVisit(state);
 
     this.setCurrentState(state);
@@ -411,7 +401,7 @@ class CircleGraph {
 
   async navigate(options) {
     let path = []
-    this.logEvent('navigate', options)
+    this.logEvent('graph.navigate', options)
     options = options || {};
     if (this.state === undefined) {
       this.setCurrentState(this.options.start)
@@ -458,7 +448,7 @@ class CircleGraph {
       stepsLeft -= 1;
       $("#GraphNavigation-steps").html(stepsLeft)
       if (termination(this, state) || stepsLeft == 0) {
-        this.logEvent('done')
+        this.logEvent('graph.done')
         await sleep(500)
         $(".GraphNavigation-currentEdge").removeClass('GraphNavigation-currentEdge')
         if (options.leave_state) {
@@ -514,7 +504,7 @@ class CircleGraph {
 
   async showForcedHovers(start=0, stop) {
     $(this.el).addClass('forced-hovers')
-    this.logEvent('begin forced hovers')
+    this.logEvent('graph.forced.start')
     let delay = 1000
     // await sleep(delay)
     this.hover(this.options.expansions[0][0])
@@ -528,7 +518,7 @@ class CircleGraph {
       // await getKeyPress()
 
       // this.hideEdge(s1, s2)
-      this.logEvent('force hover', {s1, s2, duration: delay})
+      this.logEvent('graph.forced.hover', {s1, s2, duration: delay})
       this.hover(s2)
       // this.showState(s2)
       // await sleep(delay)
@@ -537,7 +527,7 @@ class CircleGraph {
     };
     await sleep(delay)
     $(this.el).removeClass('forced-hovers')
-    this.logEvent('end forced hovers')
+    this.logEvent('graph.forced.end')
   }
 
   clickState(state) {
@@ -565,12 +555,11 @@ class CircleGraph {
   }
 
   showState(state) {
-    // this.logEvent('showState', {state})
     $(`.GraphNavigation-State-${state}`).addClass('is-visible')
   }
 
   hideState(state) {
-    this.logEvent('hideState', {state})
+    this.logEvent('graph.hide_state', {state})
     $(`.GraphNavigation-State-${state}`).removeClass('is-visible')
   }
 

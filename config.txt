@@ -10,15 +10,16 @@ database_url = sqlite:///participants.db
 table_name = participants
 
 [Prolific]
-name = Public Study Name Shown to Participants
-project_name = prolific_project_name
-reward = 225
-total_available_places = 30
-estimated_completion_time = 15
+name = Puzzle Game
+reward = 400
+total_available_places = 2
+estimated_completion_time = 25
 description =
-    Describe your study here
+    In this study, you will solve a series of puzzles and then fill
+    out a survey about your mental health.
 
-    You can use *Markdown* formatting.
+    Based on your performance, you will earn **a bonus of up to $2!** (USD)
+    With the bonus, the median hourly wage for this study is around **$12/hr**.
 
 [Server Parameters]
 host = 0.0.0.0

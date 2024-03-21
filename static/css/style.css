@@ -1,3 +1,7 @@
+.text strong {
+/*  color: #731FC0;*/
+  font-weight: 500;
+}
 .btn-primary {
   border: none;
   color: #F3E6FF;
