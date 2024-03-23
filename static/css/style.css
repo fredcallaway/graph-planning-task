@@ -1,3 +1,4 @@
+
 .text strong {
 /*  color: #731FC0;*/
   font-weight: 500;
@@ -83,7 +84,18 @@
   text-align: center;
 }
 
+
 /* these are not critical but I find them useful  */
+
+/* additional survey styling */
+.sd-description {
+  width: 700px !important;
+}
+#_survey_target thead tr th:first-child,
+tbody tr td:first-child {
+  width: 40% !important;
+  min-width: 40% !important;
+}
 
 .text {
   margin: auto;
