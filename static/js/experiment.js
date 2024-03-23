@@ -12,7 +12,6 @@ async function runExperiment() {
     eye_tracking: false,
     hover_edges: true,
     hover_rewards: true,
-    points_per_cent: 2,
     use_n_steps: false,
     vary_transition: true,
     show_points: false,
@@ -23,7 +22,8 @@ async function runExperiment() {
     show_successor_rewards: false,
     reveal_by: 'hover',
     score_limit: 200,
-    // time_limit: 600,
+    time_limit: undefined,
+    points_per_cent: 1,
   }, config.parameters)
   console.log('config.parameters', config.parameters)
 
@@ -38,6 +38,12 @@ async function runExperiment() {
   psiturk.recordUnstructuredData('PARAMS', PARAMS);
 
   const trials = _.mapValues(config.trials, block => block.map(t => ({...PARAMS, ...t})))
+  if (PARAMS.time_limit) {
+    PARAMS.score_limit = undefined
+  }
+  if (PARAMS.score_limit) {
+    PARAMS.points_per_cent = Infinity
+  }
   const bonus = new Bonus({points_per_cent: PARAMS.points_per_cent, initial: 0})
   // makeGlobal({config, PARAMS, trials})
 
@@ -61,8 +67,8 @@ async function runExperiment() {
     }).prependTo(DISPLAY)
 
     let score = new Score().attach(top.div)
-    score.addPoints(50)
-    bonus.addPoints(50)
+    // score.addPoints(50)
+    // bonus.addPoints(50)
 
     // if (local) PARAMS.time_limit = 300
 
@@ -104,37 +110,41 @@ async function runExperiment() {
 
       let start_message = PARAMS.score_limit ?
         `You're ${PARAMS.score_limit - score.score} points away from finishing` :
-        this.options.bonus.reportBonus()
+        bonus.reportBonus()
       let cg = new CircleGraph({...PARAMS, ...trial, start_message})
       await cg.run(workspace)
       timer.pause()
 
+      psiturk.recordUnstructuredData('bonus', bonus.dollars())
       saveData()
     }
   }
 
+  async function survey() {
+    _.shuffle(CLINICAL_SURVEY.pages.slice(0,-1)).forEach((x, i) => {
+      x.elements[0].rows = _.shuffle(x.elements[0].rows)
+      CLINICAL_SURVEY.pages[i] = x
+    })
+    await new SurveyTrial(CLINICAL_SURVEY).run(DISPLAY)
+  }
+
   async function debrief() {
+    psiturk.recordUnstructuredData('completed', true)
     DISPLAY.empty()
     let div = $('<div>').appendTo(DISPLAY).addClass('text')
     $('<p>').appendTo(div).html(markdown(`
       # You're done!
 
-      Thanks for participating! We have a few quick questions before you go.
+      If you have any feedback please provide it below (feel free to leave it empty!)
     `))
-
-    let difficulty = radio_buttons(div, `
-      How difficult was the experiment?
-    `, ['too easy', 'just right', 'too hard'])
 
     let feedback = text_box(div, `
       Do you have any other feedback? (optional)
     `)
 
-    makeGlobal({difficulty})
-
     await button(div, 'submit').clicked
     // this information is already in the log, but let's put it in one place
-    logEvent('debrief.submitted', getInputValues({difficulty, feedback}))
+    logEvent('debrief.submitted', getInputValues({feedback}))
   }
 
   // using runTimeline is optional, but it allows you to jump to different blocks
@@ -142,6 +152,7 @@ async function runExperiment() {
   await runTimeline(
     instructions,
     main,
+    survey,
     debrief
   )
 };
