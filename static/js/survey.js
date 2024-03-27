@@ -205,7 +205,7 @@ sense to you, you should answer "Not at all" or "Never".
        "I feel compelled to count while I am doing things.",
        "I find it difficult to touch an object when I know it has been touched by strangers or certain people.",
        "I find it difficult to control my own thoughts.",
-       "I collect things I don’t need.",
+       "I collect things I don't need.",
        "I repeatedly check doors, windows, drawers, etc.",
        "I get upset if others change the way I have arranged things.",
        "I feel I have to repeat certain numbers.",
