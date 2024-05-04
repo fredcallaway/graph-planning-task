@@ -21,15 +21,30 @@ async function runExperiment() {
     show_predecessors: false,
     show_successor_rewards: false,
     reveal_by: 'hover',
+    revealed: true,
     score_limit: 300,
     time_limit: undefined,
     points_per_cent: 3,
+    images: [
+      "static/images/baby.png",
+      "static/images/ball.png",
+      "static/images/bicycle.png",
+      "static/images/bowtie.png",
+      "static/images/couch.png",
+      "static/images/crab.png",
+      "static/images/cupcake.png",
+      "static/images/fence.png",
+      "static/images/poolring.png",
+      "static/images/toothbrush.png",
+      "static/images/zebra.png",
+    ]
   }, config.parameters)
   console.log('config.parameters', config.parameters)
 
   PARAMS.graphRenderOptions = {
     onlyShowCurrentEdges: false,
-    width: 600,
+    stateGraphics: PARAMS.images,
+    width: 800,
     height: 600,
     scaleEdgeFactor: 1,
     fixedXY: circleXY(config.trials.main[0].graph.length)
@@ -108,10 +123,10 @@ async function runExperiment() {
       if (checkDone()) break
       workspace.empty()
 
-      let start_message = PARAMS.score_limit ?
-        `You're ${PARAMS.score_limit - score.score} points away from finishing` :
+      // let start_message = PARAMS.score_limit ?
+      //   `You're ${PARAMS.score_limit - score.score} points away from finishing` :
         bonus.reportBonus()
-      let cg = new CircleGraph({...PARAMS, ...trial, start_message})
+      let cg = new CircleGraph({...PARAMS, ...trial})
       await cg.run(workspace)
       timer.pause()
 

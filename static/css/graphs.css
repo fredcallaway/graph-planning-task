@@ -20,11 +20,14 @@ img {
 /*  width: 600px;*/
 /*  border: thin black solid;*/
 }
+
 .describe-rewards-box {
 /*  float: left;*/
   display: inline-block;
-  margin: 10 20 20 0;
+  margin-right: 10px;
+/*  border: thin black solid;*/
   font-weight: bold;
+  text-align: center;
 }
 
 #cgi-top {
@@ -64,6 +67,7 @@ img {
   top: -50px;
   left: 30px;
   position: absolute;
+  z-index: 10 !important;
 }
 
 @keyframes zoomup {
@@ -326,11 +330,28 @@ img {
   transition: background-color 300ms;
   margin: 1rem;
   user-select: none;
+  position: static;
+  z-index: 0;
 }
 
 .GraphNavigation .State > .GraphReward {
   display: none;
 }
+
+.State img {
+  position: static;
+/*  float: left;*/
+  width: 4rem;
+}
+
+.State.GraphNavigation-current img {
+  display: none;
+}
+
+.State.consumed img {
+  display: none;
+}
+
 .GraphNavigation.withGraphic .State > .GraphReward {
   display: block;
 }

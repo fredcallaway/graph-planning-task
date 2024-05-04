@@ -4,10 +4,6 @@ function makeGlobal(obj) {
   Object.assign(window, obj)
 }
 
-
-
-
-
 class Bonus {
   constructor(options) {
     let {points_per_cent, initial = 0} = options;
