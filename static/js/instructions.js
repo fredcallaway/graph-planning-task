@@ -235,6 +235,35 @@ class GraphInstructions extends Instructions {
     this.runNext() // don't make them click the arrow
   }
 
+  describeRewards() {
+    let rewardGraphics = Object.fromEntries(_.zip(PARAMS.rewards, PARAMS.images))
+    // let descriptions = vals.map(reward => {
+    //   return `${renderSmallEmoji(rewardGraphics[reward])}is worth ${reward}`
+    // })
+    // return descriptions.slice(0, -1).join(', ') + ', and ' + descriptions.slice(-1)
+
+    let vv =  PARAMS.rewards.map(reward => `
+      <div class="describe-rewards-box">
+      <img src="${rewardGraphics[reward]}" width=60/>
+      <br>
+      ${ensureSign(reward)}
+      </div>
+    `).join("")
+    return `
+      <div class="describe-rewards">
+        ${vv}
+      </div>
+    `
+  }
+
+  async stage_temp() {
+
+    this.setPrompt(
+      `Each image is worth a different number of points:
+      ${this.describeRewards()}
+    `)
+  }
+
   async forcedHoverInstructions(hidden_things) {
     this.setPrompt(`On each round, we will show you parts of the board, one at a time.`)
     await this.button()

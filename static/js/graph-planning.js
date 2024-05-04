@@ -5,6 +5,8 @@ let ensureSign = x => x > 0 ? "+" + x : "" + x
 const FAST_MODE = (new URLSearchParams(location.search)).get('fast') == '1'
 
 
+
+
 class Graph {
   constructor(adjacency) {
     // adjacency is a list of [state, children] pairs
@@ -75,12 +77,9 @@ class CircleGraph {
     this.onStateVisit = options.onStateVisit ?? ((s) => {})
     this.score = options.score ?? 0
 
-    if (options.consume) {
-      this.rewards[options.start] = 0
-    }
 
-    // options.rewardGraphics[0] = options.rewardGraphics[0] ?? ""
-    // options.graphics = this.rewards.map(x => options.rewardGraphics[x])
+    // options.reward_graphics[0] = options.reward_graphics[0] ?? ""
+    // options.graphics = this.rewards.map(x => options.reward_graphics[x])
 
     this.graph = new Graph(options.graph)
     this.el = renderCircleGraph(
@@ -91,6 +90,10 @@ class CircleGraph {
         ...options.graphRenderOptions,
       }
     )
+    if (options.consume) {
+      this.rewards[options.start] = 0
+      $(this.el.querySelector(`.GraphNavigation-State-${options.start}`)).addClass('consumed')
+    }
     $(this.el).hide()
 
     this.graphContainer = $("<div>")
@@ -163,10 +166,10 @@ class CircleGraph {
   }
 
   async showStartScreen() {
-    if (FAST_MODE) {
-      this.showGraph()
-      return
-    }
+    // if (FAST_MODE) {
+    //   this.showGraph()
+    //   return
+    // }
     this.logEvent('graph.showStartScreen')
     if (this.options.actions) {
       $('<div>')
@@ -194,14 +197,17 @@ class CircleGraph {
     }
 
     this.graphContainer.css({border: 'thin white solid'}) // WTF why does this fix positioning??
-    let msg = $('<p>')
+    let msg = $('<div>').appendTo(this.graphContainer)
 
-    if (this.options.start_message) {
-      msg
-      .css({marginTop: 120})
-      .appendTo(this.graphContainer)
-      .text(this.options.start_message)
-    }
+    // if (this.options.start_message) {
+    //   msg
+    //   .css({marginTop: 120})
+    //   .appendTo(this.graphContainer)
+    //   .text(this.options.start_message)
+    // }
+
+    describeRewards(PARAMS.images, this.options.value, this.options.targets, this.options.description).appendTo(msg)
+
 
     await button(this.root, 'start', {
       post_delay: 0,
@@ -348,12 +354,22 @@ class CircleGraph {
     });
   }
 
-  addPoints(points, state) {
+  async addPoints(points, state) {
     logEvent('graph.addPoints', {points})
     if (points == 0) {
       return
     }
     this.setScore(this.score + points)
+
+    let cls = (points < 0) ? "loss" : "win"
+    let sign = (points < 0) ? "" : "+"
+    let pop = $("<span>")
+    .addClass('pop ' + cls)
+    .text(sign + points)
+    .appendTo($(`.GraphNavigation-State-${state}`))
+
+    await sleep(1500)
+    pop.remove()
   }
 
   setScore(score) {
@@ -383,6 +399,7 @@ class CircleGraph {
       this.addPoints(this.rewards[state], state)
       if (this.options.consume) {
         this.rewards[state] = 0
+        $(`.GraphNavigation-State-${state}`).addClass('consumed')
         // let cls = (points < 0) ? "loss" : "win"
         // let sign = (points < 0) ? "" : "+"
         await sleep(200)
@@ -615,15 +632,6 @@ class CircleGraph {
 
   setReward(state, reward) {
     this.rewards[state] = parseFloat(reward)
-    // let graphic = this.options.rewardGraphics[reward]
-
-    // we have to use the default querySelector because this.el hasn't
-    // been added to the DOM yet
-    $(this.el.querySelector(`.GraphNavigation-State-${state}`)).html(
-      $('<div>', {'class': 'GraphReward'}).html(`
-        ${reward == 0 ? '' : ensureSign(reward)}
-      `).addClass(reward < 0 ? "loss" : "win")
-    )
   }
 
   setRewards(rewards) {
@@ -634,6 +642,20 @@ class CircleGraph {
 }
 
 
+function describeRewards(images, value, targets, description) {
+  console.log('describeRewards', {images, targets, description})
+  let div = $('<div>')
+  $('<p>').html(`<b>${numString(value, 'point')}</b> for items matching: <b>${description}</b>`)
+  .css({marginTop: 100})
+  .appendTo(div)
+  let imgs = $('<div>').addClass('describe-rewards-box').appendTo(div)
+  for (const t of targets) {
+    $('<img>').prop('src', images[t]).prop('width', 80).appendTo(imgs)
+  }
+  console.log(div)
+  return div
+}
+
 const stateTemplate = (state, options) => {
   let cls = `GraphNavigation-State-${state}`;
   if (options.goal) {
@@ -641,6 +663,7 @@ const stateTemplate = (state, options) => {
   }
   return `
   <div class="State GraphNavigation-State ${cls || ''}" style="${options.style || ''}" data-state="${state}">
+    <img src="${options.image}" />
   </div>
   `;
     // <img src="${graphicsUrl(graphic)}" dragggable=false/>
@@ -757,6 +780,7 @@ function renderCircleGraph(graph, goal, options) {
   const states = graph.states.map(state => {
     const [x, y] = xy.coordinate[state];
     return stateTemplate(state, {
+      image: options.stateGraphics[state-1],
       probe: state == options.probe,
       goal: state == goal,
       style: `transform: translate(${x - BLOCK_SIZE/2}px,${y - BLOCK_SIZE/2}px);`,
