@@ -18,6 +18,13 @@
   border-color: #4E08B2;
 }
 
+ .center-message {
+  margin: auto;
+  margin-top: 200px;
+  font-size: 16px;
+  text-align: center;
+ }
+
 /* template basics */
 
 .absolute-centered {
@@ -32,6 +39,7 @@
    margin-top: 20px;
    text-align: center
  }
+
 
 /* this is the element where all experiment content goes */
  #display {

@@ -27,9 +27,9 @@ class GraphInstructions extends Instructions {
   }
 
   async stage_intro() {
-
     let trial = {...this.trials.intro[0], revealed: true}
     let cg = new CircleGraph(trial).attach(this.content);
+    $(`.GraphNavigation-State img`).hide()
     cg.showGraph()
 
     this.setPrompt(`Welcome! In this experiment, you will play a game on the board shown below.`)
@@ -39,80 +39,75 @@ class GraphInstructions extends Instructions {
     cg.setCurrentState(trial.start)
     await this.button()
 
+    this.setPrompt(`Your current location on the board is highlighted in blue.`)
+
     this.setPrompt(`You can move by clicking on a location that has an arrow pointing<br>from your current location. Try it now!`)
     let next_states = cg.graph.successors(trial.start)
     for (const s of next_states) {
       $(`.GraphNavigation-State-${s}`).addClass('GraphNavigation-State-Highlighted')
     }
-
-    console.log('cg.graph', cg.graph)
     await cg.navigate({n_steps: 1, leave_state: true})
     $(`.GraphNavigation-State`).removeClass('GraphNavigation-State-Highlighted')
 
     this.setPrompt(`
-      The goal of the game is to collect points on the board.<br>
-      Try collecting this +4!
-    `)
-    let goal = _.sample(cg.graph.successors(cg.state))
-    // $("#gn-points").show()
-    cg.setReward(goal, 4)
-    console.log('goal', goal)
-    await cg.navigate({n_steps: -1, goal, leave_state: true})
-
-    // this.setPrompt(`
-    //   In the non-practice games, those points will become a cash bonus!<br>
-    //   (${trial.bonus.describeScheme()})
-    // `)
-    // await this.button()
-
-    this.setPrompt(`
-      Now try collecting this one.
+      The round ends when you get to a location with no outgoing connections.
+      Finish the round to continue.
     `)
 
-    goal = _.sample(cg.graph.successors(cg.state))
-    cg.setReward(goal, -4)
-    await cg.navigate({n_steps: -1, goal, leave_open: true})
-
-    this.setPrompt(`
-      <i>Ouch!</i> You lost 4 points for collecting that one!
-    `)
+    await cg.navigate()
     cg.removeGraph()
-
-    await this.button()
     this.runNext()
   }
 
-  async stage_transition() {
+  async stage_images() {
     this.setPrompt(`
-      Both the connections and points change on every round of the game.
+      The goal of the game is to collect these images. Try it out!
     `)
-    let trial = {...this.trials.vary_transition[0], revealed: true}
+    let trial = {...this.trials.intro[1], revealed: true}
     cg = new CircleGraph(trial).attach(this.content);
     cg.showGraph()
     cg.setCurrentState(trial.start)
-    await this.button()
 
+    await cg.navigate({n_steps: 1, leave_state: true})
     this.setPrompt(`
-      When you get to a location with no outgoing connections, the round ends.<br>
-    `)
-    let terminal = _.keys(_.pickBy(cg.graph._adjacency, _.isEmpty))
-    for (const s of terminal) {
-      cg.highlight(s)
-    }
-    await this.button()
-    for (const s of terminal) {
-      cg.unhighlight(s)
-    }
-
-    this.setPrompt(`
-      Try to make as many points as you can!
+      Nice! That image was worth two points. Some images will actually
+      cost you points though...
     `)
     await cg.navigate()
     this.runNext()
   }
 
+  async stage_reward_description() {
+    this.setPrompt(`
+      The value of the images changes on each round. Before the round,
+      we will tell you which images are good. All the other images
+      are worth -1 points.
+    `)
+    this.content.html(new CircleGraph(this.trials.intro_describe[0]).describeRewards())
+    await this.button()
+
+    this.setPrompt(`
+      The number of good images and their value changes from round to round.
+      Click to see a few more examples.
+    `)
+    this.content.html(new CircleGraph(this.trials.intro_describe[1]).describeRewards())
+
+    for (let trial of this.trials.intro_describe.slice(2)) {
+      let btn = button(this.prompt, 'next')
+      await btn.promise()
+      btn.remove()
+      this.content.empty()
+      cg = new CircleGraph(trial);
+      cg.describeRewards().appendTo(this.content)
+    }
+
+
+    await this.button()
+    this.runNext()
+  }
+
   async stage_practice_revealed() {
-    this.setPrompt("Try a few more practice rounds.")
+    this.setPrompt("Let's try a few practice rounds.")
     for (let trial of this.trials.practice_revealed) {
       let cg = new CircleGraph({...trial, revealed: true})
       await cg.run(this.content)
@@ -124,15 +119,9 @@ class GraphInstructions extends Instructions {
     this.setPrompt("Just one more thing...")
     let trial = {...this.trials.intro_hover[0], revealed: true}
 
-    // FAST_MODE || await this.button()
+    FAST_MODE || await this.button()
 
-    let hidden_things = "points and connections"
-    // [
-    //   trial._rewards && "points",
-    //   trial._edges && "connections"
-    // ].filter(x=>x).join(" and ")
-
-    this.setPrompt(`So far we've been showing you all the ${hidden_things}`)
+    this.setPrompt(`So far we've been showing you all the connections.`)
     cg = new CircleGraph(trial).attach(this.content);
     cg.showGraph()
     cg.setCurrentState(trial.start)
@@ -140,11 +129,12 @@ class GraphInstructions extends Instructions {
 
     this.setPrompt("But in the real game, they're hidden!")
     FAST_MODE || await sleep(600)
-    FAST_MODE || $('.GraphNavigation-arrow,.GraphReward,.GraphNavigation-edge').css('transition', 'opacity 1500ms')
-    cg.el.classList.add('hideStates')
+    FAST_MODE || $('.GraphNavigation-arrow,.GraphNavigation-edge').css('transition', 'opacity 1500ms')
     cg.el.classList.add('hideEdges')
+    cg.options.hover_edges = true
+
     FAST_MODE || await sleep(1500)
-    $('.GraphNavigation-arrow,.GraphReward,.GraphNavigation-edge').css('transition', '')
+    $('.GraphNavigation-arrow,.GraphNavigation-edge').css('transition', '')
     this.cg = cg
     this.skipNextClear()
   }
@@ -157,6 +147,7 @@ class GraphInstructions extends Instructions {
     } else {
       let trial = {...this.trials.intro_hover[0], revealed: false}
       cg = new CircleGraph(trial).attach(this.content);
+      cg.options.hover_edges = true
       cg.showGraph()
       cg.setCurrentState(trial.start)
     }
@@ -181,9 +172,14 @@ class GraphInstructions extends Instructions {
       goal = 'earn the most money'
       let time_limit = PARAMS.time_limit / 60
       this.setPrompt(`
-        Instead, you will have **${time_limit} minutes** to collect **as many points as you can.**
+        Instead, you will have **${2*time_limit} minutes** to collect **as many points as you can.**
         At the end of the experiment, we will convert those points into a cash bonus:
         **${this.options.bonus.describeScheme()}.**
+      `)
+      await this.button()
+      this.setPrompt(`
+        The ${2*time_limit} minutes will be broken up into two stages of ${time_limit} minutes each.
+        We'll tell you more about the second stage later.
       `)
       await this.button()
     } else {
@@ -205,7 +201,7 @@ class GraphInstructions extends Instructions {
     // I suggest keeping something like this here to warn participants to not refresh
 
     this.setPrompt(`
-      That's it! You're ready to begin the main section of the experiment.
+      That's it! You're ready to begin the first main stage of the experiment.
 
       <br><br>
       <div class="alert alert-danger">
@@ -256,14 +252,6 @@ class GraphInstructions extends Instructions {
     `
   }
 
-  async stage_temp() {
-
-    this.setPrompt(
-      `Each image is worth a different number of points:
-      ${this.describeRewards()}
-    `)
-  }
-
   async forcedHoverInstructions(hidden_things) {
     this.setPrompt(`On each round, we will show you parts of the board, one at a time.`)
     await this.button()
@@ -298,74 +286,78 @@ class GraphInstructions extends Instructions {
     await cg.navigate()
   }
 
-  async freeHoverInstructions(cg, hidden_things) {
-     this.setPrompt(`
-       But don't worry! Before you select your moves, you can see the
-       ${hidden_things} in <i><b>imagination mode</b></i>.
-     `)
-     FAST_MODE || await this.button()
+  async freeHoverInstructions(cg) {
+    $(cg.el).addClass('hideEdges')
+    this.setPrompt(`
+     But don't worry! Before you select your moves, you can see the
+     connections in <i><b>imagination mode</b></i>.
+    `)
+    FAST_MODE || await this.button()
 
-     let action_text = {
+    let action_text = {
       'click': 'clicking on it',
       'hover': 'hovering the mouse over it',
-     }[cg.options.reveal_by]
+    }[cg.options.reveal_by]
 
-     this.setPrompt(`
+    this.setPrompt(`
       In imagination mode, you can imagine being in any location by ${action_text}.
       This will show you the locations you could visit next from that one.
     `)
-     FAST_MODE || await this.button()
+    FAST_MODE || await this.button()
 
-     this.setPrompt(`
+    this.setPrompt(`
       Try it out! Hover over every location to continue.
     `)
-     cg.plan(true)
+    cg.plan(true)
 
-     let setEqual = (xs, ys) => xs.size === ys.size && [...xs].every((x) => ys.has(x));
-     let hovered = new Set([cg.state])
-     let all_states = new Set(cg.graph.states)
-     let done = false
-     let reminded = false
+    let setEqual = (xs, ys) => xs.size === ys.size && [...xs].every((x) => ys.has(x));
+    let hovered = new Set([cg.state])
+    let all_states = new Set(cg.graph.states)
+    let done = false
+    let reminded = false
 
-     let hoveredAll = makePromise();
+    let hoveredAll = makePromise();
 
-     cg.logger_callback = (event, info) => {
-       if (!done && event == 'graph.imagine') {
-         hovered.add(info.state)
-         console.log('callback', String(info.state))
-         if (cg.options.show_successor_rewards && !reminded && terminal.includes(String(info.state))) {
-           this.setPrompt(`
-             If nothing appears, it means that location has no outgoing connections.
-             <br>
-             Click on every location to continue.
-           `)
-         }
-         if (setEqual(hovered, all_states)) {
-           done = true
-           hoveredAll.resolve()
-         }
-       }
-     }
-     sleep(10000).then(() => {
+    cg.logger_callback = (event, info) => {
+      if (!done && event == 'graph.imagine') {
+        hovered.add(info.state)
+        console.log('callback', String(info.state))
+        if (cg.options.show_successor_rewards && !reminded && terminal.includes(String(info.state))) {
+         this.setPrompt(`
+           If nothing appears, it means that location has no outgoing connections.
+           <br>
+           Click on every location to continue.
+         `)
+        }
+        if (setEqual(hovered, all_states)) {
+          done = true
+          hoveredAll.resolve()
+        }
+      }
+    }
+    sleep(10000).then(() => {
       reminded = true
       let action_text = {
        'click': 'Click on',
        'hover': 'Hover the mouse over',
       }[cg.options.reveal_by]
-       if (done) return
-       this.setPrompt(`
-         <b>${action_text} every location to continue!</b><br>
-       `)
-     })
-     await hoveredAll
+      if (done) return
+      this.setPrompt(`
+        <b>${action_text} every location to continue!</b><br>
+      `)
+    })
+    await hoveredAll
 
-     this.setPrompt(`
-       When you're ready to select your moves, click on your current location (the blue one).
+    this.setPrompt(`
+      When you're ready to select your moves, click on your current location (the blue one).
     `)
-     await cg.enableExitImagination()
-     this.setPrompt(`
-       Try to get as many points as you can!
+    await cg.enableExitImagination()
+
+    this.setPrompt(`
+      Now you can select a path. By the way, on this round,
+      items matching: <b>${cg.options.description}</b> are worth
+      <b>${numString(cg.options.value, 'point')}</b>
     `)
-     await cg.navigate()
+    await cg.navigate()
   }
 }

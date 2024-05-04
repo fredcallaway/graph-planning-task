@@ -67,6 +67,9 @@ class Button extends Input {
     this.button.css(...args)
     return this
   }
+  remove() {
+    this.button.remove()
+  }
 }
 
 

@@ -125,15 +125,22 @@ class CircleGraph {
     } else {
       this.setCurrentState(this.options.start)
       await this.showStartScreen()
-      // if (!this.options.revealed) {
-      //   await this.plan()
-      // }
+      if (this.options.hover_edges || this.options.hover_states) {
+        await this.plan()
+      }
       await this.navigate()
     }
   }
 
+  async showImageLocations(txt='start') {
+    $(`.GraphNavigation-State`).addClass('is-visible')
+    await this.centerButton(txt)
+    $(`.GraphNavigation-State`).removeClass('is-visible')
+  }
+
   async locationQuiz() {
     logEvent('graph.quiz.start')
+    this.el.classList.add('hideStates')
     let images = this.options.images
     let N = images.length + 1
     this.options.graph = Array(N).fill([])
@@ -147,13 +154,7 @@ class CircleGraph {
     let showAll = async () => {
       logEvent('graph.quiz.showAll')
       img.hide()
-      $(`.GraphNavigation-State`).addClass('is-visible')
-      await button(this.root, 'start', {
-        post_delay: 0,
-        persistent: false,
-        cls: 'absolute-centered',
-      }).promise()
-      $(`.GraphNavigation-State`).removeClass('is-visible')
+      await this.showImageLocations()
       img.show()
     }
 
@@ -163,10 +164,12 @@ class CircleGraph {
     let todo = _.shuffle(_.range(1, N))
     while (todo.length) {
       let target = todo.pop()
+      img.show()
       img.prop({src: images[target-1]})
       logEvent('graph.quiz.prompt', {target})
 
       let clicked = await this.clickStatePromise(undefined, this.options.timeLimit)
+      img.hide()
 
       // feedback
       this.showState(target)
@@ -218,8 +221,8 @@ class CircleGraph {
     this.logEvent('graph.showGraph')
     // this.setupEyeTracking()
 
-    if (!this.options.revealed && this.options.hover_rewards) this.el.classList.add('hideStates');
-    if (!this.options.revealed && this.options.hover_edges) this.el.classList.add('hideEdges');
+    if (this.options.hide_states || this.options.hover_rewards) this.el.classList.add('hideStates');
+    if (this.options.hide_edges || this.options.hover_edges) this.el.classList.add('hideEdges');
     $(`.ShadowState .GraphReward`).remove()
     if (!this.options.show_steps) {
       $("#gn-steps").hide()
@@ -236,6 +239,14 @@ class CircleGraph {
     await sleep(300)
     this.el.innerHTML = ""
     $(this.el).css({opacity: 1});
+  }
+
+  centerButton(txt='start') {
+    return button(this.root, txt, {
+      post_delay: 0,
+      persistent: false,
+      cls: 'absolute-centered',
+    }).promise()
   }
 
   async showStartScreen() {
@@ -270,26 +281,27 @@ class CircleGraph {
     }
 
     this.graphContainer.css({border: 'thin white solid'}) // WTF why does this fix positioning??
-    let msg = $('<div>').appendTo(this.graphContainer)
 
-    // if (this.options.start_message) {
-    //   msg
-    //   .css({marginTop: 120})
-    //   .appendTo(this.graphContainer)
-    //   .text(this.options.start_message)
-    // }
+    if (this.options.start_message) {
+      let msg = $('<div>').appendTo(this.graphContainer)
+      .css({marginTop: 120})
+      .appendTo(this.graphContainer)
+      .text(this.options.start_message)
+      await this.centerButton('continue')
+      msg.remove()
+    }
 
-    describeRewards(PARAMS.images, this.options.value, this.options.targets, this.options.description).appendTo(msg)
+    if (this.options.show_locations) {
+      $(this.el).show()
+      $('.GraphNavigation-edge,.GraphNavigation-arrow').hide()
+      await this.showImageLocations('continue')
+      $('.GraphNavigation-edge,.GraphNavigation-arrow').show()
+      $(this.el).hide()
+    }
 
-
-    await button(this.root, 'start', {
-      post_delay: 0,
-      persistent: false,
-      cls: 'absolute-centered',
-    }).promise()
-    // .css({marginTop: '210px'})
-
-    msg.remove()
+    let desc = this.describeRewards().appendTo(this.graphContainer)
+    await this.centerButton()
+    desc.remove()
 
     await sleep(200)
     if (this.options.n_steps > 0) {
@@ -301,6 +313,20 @@ class CircleGraph {
       moves.remove()
     }
     this.showGraph()
+  }
+
+  describeRewards() {
+    let div = $('<div>').addClass('describe-rewards')
+    $('<p>').html(`
+      <b>${numString(this.options.value, 'point')}</b>
+      for items matching: <b>${this.options.description}</b>`)
+    .css({marginTop: 100})
+    .appendTo(div)
+    let imgs = $('<div>').addClass('describe-rewards-box').appendTo(div)
+    for (const t of this.options.targets) {
+      $('<img>').prop('src', this.options.images[t]).prop('width', 80).appendTo(imgs)
+    }
+    return div
   }
 
   queryState(s) {
@@ -328,7 +354,7 @@ class CircleGraph {
     $('.GraphNavigation').css('opacity', .7)
 
 
-    let transition = '300ms'
+    let transition = '200ms'
     let eventType = 'mouseenter'
     if (this.options.reveal_by == 'click') {
       transition = '500ms'
@@ -394,7 +420,6 @@ class CircleGraph {
       onlyShowCurrentEdges: this.options.graphRenderOptions.onlyShowCurrentEdges,
       ...options,
     });
-    this.hover(state)
   }
 
   clickTransition(options) {
@@ -473,6 +498,7 @@ class CircleGraph {
 
     this.setCurrentState(state);
     if (!initial) {
+      this.hover(state)
       this.addPoints(this.rewards[state], state)
       if (this.options.consume) {
         this.rewards[state] = 0
@@ -682,15 +708,19 @@ class CircleGraph {
     if (this.options.keep_hover) {
       this.unhoverAll()
     }
-    if (this.options.show_hovered_reward) this.showState(state)
-    $(`.GraphNavigation-State-${state}`).addClass('hovered')
-    for (const successor of this.graph.successors(state)) {
-      this.showEdge(state, successor)
-      if (this.options.show_successor_rewards) this.showState(successor)
+    if (this.options.hover_states) {
+      if (this.options.show_hovered_reward) this.showState(state)
+      $(`.GraphNavigation-State-${state}`).addClass('hovered')
     }
-    if (this.options.show_predecessors) {
-      for (const pred of this.graph.predecessors(state)) {
-        this.showEdge(pred, state)
+    if (this.options.hover_edges) {
+      for (const successor of this.graph.successors(state)) {
+        this.showEdge(state, successor)
+        if (this.options.show_successor_rewards) this.showState(successor)
+      }
+      if (this.options.show_predecessors) {
+        for (const pred of this.graph.predecessors(state)) {
+          this.showEdge(pred, state)
+        }
       }
     }
   }
@@ -729,20 +759,6 @@ class CircleGraph {
   }
 }
 
-
-function describeRewards(images, value, targets, description) {
-  console.log('describeRewards', {images, targets, description})
-  let div = $('<div>')
-  $('<p>').html(`<b>${numString(value, 'point')}</b> for items matching: <b>${description}</b>`)
-  .css({marginTop: 100})
-  .appendTo(div)
-  let imgs = $('<div>').addClass('describe-rewards-box').appendTo(div)
-  for (const t of targets) {
-    $('<img>').prop('src', images[t]).prop('width', 80).appendTo(imgs)
-  }
-  console.log(div)
-  return div
-}
 
 const stateTemplate = (state, options) => {
   let cls = `GraphNavigation-State-${state}`;

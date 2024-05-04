@@ -106,17 +106,6 @@ function sample_graph(n)
     graph, start
 end
 
-
-function intro_graph(n)
-    g = DiGraph(n)
-    for i in 1:n
-        add_edge!(g, i, mod1(i+1, n))
-        add_edge!(g, i, mod1(i-3, n))
-        # add_edge!(g, i, mod1(i+6, n))
-    end
-    g
-end
-
 function linear_rewards(n)
     @assert iseven(n)
     n2 = div(n,2)
@@ -152,40 +141,79 @@ function Random.rand(rng::AbstractRNG, s::Random.SamplerTrivial{<:IIDSampler})
     rand(x, n)
 end
 
-function sample_trial(perm)
+function sample_trial(perm; n_feature=rand(1:3), value=rand(1:3), revealed=true, kws...)
     graph, start = sample_graph(length(perm)+1)
     for es in graph
         es .-= 1
     end
     start -= 1
     mask = Union{Missing,Bool}[missing, missing, missing]
-    n_feature = rand(1:3)
     chosen = sample(1:3, n_feature; replace=false)
     mask[chosen] .= rand((true, false))
-    value = rand(1:3)
     targets = map(FEATURES[perm]) do f
         all(skipmissing(f .== mask))
     end
     rewards = [1; (value+1) .* targets] .- 1
-    (;start, graph, rewards, value, targets = findall(targets) .- 1, description=describe_mask(mask))
+    (;start, graph, rewards, value, revealed,
+      targets = findall(targets) .- 1, description=describe_mask(mask), kws...)
+end
+
+function trial2problem(t)
+    graph = map(t.graph) do es
+        es .+ 1
+    end
+    Problem(graph, t.rewards, t.start+1, -1)
+end
+
+function intro_trial(perm; reward, kws...)
+    t = sample_trial(perm)
+    while true
+        prob = trial2problem(t)
+        if minimum(length, paths(prob)) ≥ 2
+            break
+        else
+            t = sample_trial(perm)
+        end
+    end
+    rewards = zeros(Int, length(perm)+1)
+    if reward == :posneg
+        rewards .= -1
+        for s in t.graph[1]
+            rewards[s+1] = 2
+            # for s2 in t.graph[s+1]
+            #     rewards[s+1] = -1
+            # end
+        end
+    end
+    (;t..., rewards, revealed=true, kws...)
 end
 
 
 function make_trials(; perm)
     # rdist = IIDSampler(n, rewards)
     (;
-        main = [sample_trial(perm) for i in 1:30]
-        # test = ForceHoverTrial(RolloutGenerator(1); kws...),
-        # intro = [sample_problem(;graph = neighbor_list(intro_graph(n)), start=1, kws..., rewards=zeros(n))],
-        # vary_transition = [sample_problem(;kws...)],
-        # practice_revealed = [sample_problem(;kws...) for i in 1:2],
-        # intro_hover = [sample_problem(;kws...)],
-        # practice_hover = [sample_problem(;kws...) for i in 1:2],
-        # main = [sample_problem(;kws...) for i in 1:100],
+        intro = [
+            intro_trial(perm; reward=:zero),
+            intro_trial(perm; reward=:posneg),
+        ],
+        intro_describe = [
+            sample_trial(perm; n_feature=1, value=2),
+            sample_trial(perm; n_feature=2, value=1),
+            sample_trial(perm; n_feature=3, value=3),
+        ],
+        practice_revealed = [sample_trial(perm) for i in 1:3],
+        main = [sample_trial(perm) for i in 1:30],
+        intro_hover = [sample_trial(perm)],
+        main_revealed = [sample_trial(perm, hover_edges=true) for i in 1:200],
+        main_hidden = [sample_trial(perm, hover_edges=true, hide_states=true) for i in 1:200],
         # calibration = intro,
         # eyetracking = [sample_problem(;kws..., n_steps) for n_steps in shuffle(repeat(3:5, 7))]
     )
 end
+
+
+mean(random_value.(trial2problem.(make_trials(;perm).main)))
+mean(value.(trial2problem.(make_trials(;perm).main)))
 
 # %% --------
 
