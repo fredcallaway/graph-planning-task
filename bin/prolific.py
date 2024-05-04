@@ -58,11 +58,6 @@ class Prolific(object):
         })
         response = r.json()
         if r.ok:
-            response['meta']['count']
-            response['results']
-            if len(response['results']) != response['meta']['count']:
-                print("API response is incomplete. You might have to implemnent paging.")
-                exit(1)
             return response
         else:
             print(f'Problem with API request: {url}')
@@ -72,11 +67,18 @@ class Prolific(object):
     @cache
     def _studies(self):
         res = self._request('GET', f'/projects/{self.project_id}/studies?limit=1000')
+        if len(res['results']) != res['meta']['count']:
+            print("Some studies were not retrieved. You might have to implemnent paging.")
+
         return [s for s in res['results'] if s['status'] != 'UNPUBLISHED' ]
 
     @cache
     def _submissions(self, study_id):
-        return self._request('GET', f'/studies/{study_id}/submissions?limit=1000')['results']
+        res = self._request('GET', f'/studies/{study_id}/submissions?limit=1000')
+        if len(res['results']) != res['meta']['count']:
+            print("Some submissions were not retrieved. You might have to implemnent paging.")
+            exit(1)
+        return res['results']
 
     def summary_csv(self):
         """Generates a summary of all participants for this project"""
@@ -124,7 +126,7 @@ class Prolific(object):
                 f"https://app.prolific.co/researcher/workspaces/studies/{study_id}/submissions")
 
         if to_approve:
-            self._request('POST', "/submissions/bulk-approve/", json={
+            self._request('POST', "/submissions/bulk-approve/", {
                 "study_id": study_id,
                 "participant_ids": to_approve
             })
@@ -153,6 +155,8 @@ class Prolific(object):
 
         assert isinstance(bonuses, dict)
 
+        self._prolific.assign_bonuses(self._study_id, bonuses)
+
         previous_bonus = {sub['participant_id']: sum(sub['bonus_payments']) / 100
                           for sub in self._submissions(study_id)}
 
@@ -162,7 +166,7 @@ class Prolific(object):
         participants = previous_bonus.keys()
         missing = set(bonuses.keys()) - set(participants)
         if missing:
-            print('WARNING: some entries of bonuses.csv do not have submissions. Skipping these:')
+            print('WARNING: some entries of bonuses.csv do not have submissions. Skipping these.')
             print('\n'.join(f'{p},{bonus:.2f}' for p, bonus in bonuses.items() if p in missing))
             print()
 
@@ -174,7 +178,7 @@ class Prolific(object):
         if not bonus_string:
             print('No bonuses due')
         else:
-            resp = self._request('POST', '/submissions/bonus-payments/', json={
+            resp = self._request('POST', '/submissions/bonus-payments/', {
                 'study_id': study_id,
                 'csv_bonuses': bonus_string
             })
@@ -199,17 +203,21 @@ class Prolific(object):
         completed + active participants.
         """
         study_id = self.study_id(study)
-        self._request('PATCH', f'/studies/{study_id}/', json={'total_available_places': new_total})
+        self.add_places(study_id, new_total)
 
     def pause(self, study=0):
         """Temporarily pause recruiting new participants"""
         study_id = self.study_id(study)
-        self._request('POST', f'/studies/{study_id}/transition/', json={"action": "PAUSE"})
+        self.post(f'/studies/{study_id}/transition/', {
+            "action": "PAUSE"
+        })
 
     def start(self, study=0):
         """Resume recruiting participants (after pausing)"""
         study_id = self.study_id(study)
-        self._request('POST', f'/studies/{study_id}/transition/', json={"action": "START"})
+        self.post(f'/studies/{study_id}/transition/', {
+            "action": "START"
+        })
 
     def link(self, study=0):
         """Print the link to the submissions page for the given study"""
@@ -337,6 +345,9 @@ class Prolific(object):
         missing_base = round(inc[i][0], 2)
         new_base = (basepay / 100) + inc[i][0]
         print(f'base pay is off by ${-missing_base:+.2f}, should be ${new_base:.2f}')
+
+    def add_places(self, study_id, new_total):
+        self._request('PATCH', f'/studies/{study_id}/', dict(total_available_places=new_total))
 
 
 def find_token():
