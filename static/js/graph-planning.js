@@ -73,7 +73,7 @@ class CircleGraph {
 
     window.cg = this
 
-    this.rewards = [...options.rewards] ?? Array(options.graph.length).fill(0)
+    this.rewards = _.clone(options.rewards ?? Array(options.graph.length).fill(0))
     this.onStateVisit = options.onStateVisit ?? ((s) => {})
     this.score = options.score ?? 0
 
@@ -106,7 +106,7 @@ class CircleGraph {
     .append(this.el)
 
 
-    this.setRewards(options.rewards)
+    this.setRewards(this.rewards)
   }
 
   attach(div) {
@@ -120,9 +120,9 @@ class CircleGraph {
 
     this.setCurrentState(this.options.start)
     await this.showStartScreen()
-    if (!this.options.revealed) {
-      await this.plan()
-    }
+    // if (!this.options.revealed) {
+    //   await this.plan()
+    // }
     await this.navigate()
   }
 
@@ -212,7 +212,7 @@ class CircleGraph {
     await button(this.root, 'start', {
       post_delay: 0,
       persistent: false,
-        cls: 'absolute-centered',
+      cls: 'absolute-centered',
     }).promise()
     // .css({marginTop: '210px'})
 
@@ -228,6 +228,10 @@ class CircleGraph {
       moves.remove()
     }
     this.showGraph()
+  }
+
+  queryState(s) {
+    return $(this.el.querySelector(`.GraphNavigation-State-${s}`))
   }
 
   setupEyeTracking() {
@@ -542,11 +546,18 @@ class CircleGraph {
 
   clickStatePromise(state) {
     return new Promise((resolve, reject) => {
-      $(`.GraphNavigation-State-${state}`).css('cursor', 'pointer')
-      $(`.GraphNavigation-State-${state}`).one('click', () => {
-        $(`.GraphNavigation-State-${state}`).css('cursor', '')
-        resolve()
-      })
+      if (state == undefined) {
+        $('.GraphNavigation-State').on('click', function() {
+          $('.GraphNavigation-State').off('click')
+          resolve(parseInt(this.getAttribute('data-state'), 10))
+        })
+      } else {
+        $(`.GraphNavigation-State-${state}`).css('cursor', 'pointer')
+        $(`.GraphNavigation-State-${state}`).one('click', () => {
+          $(`.GraphNavigation-State-${state}`).css('cursor', '')
+          resolve(state)
+        })
+      }
     })
   }
 
@@ -713,6 +724,7 @@ function graphXY(graph, width, height, scaleEdgeFactor, fixedXY) {
   // Now we compute our coordinates.
   const coordinate = {};
   const scaled = {};
+  console.log('graph.states', graph.states)
   for (const state of graph.states) {
     let [x, y] = fixedXY[state];
     // We subtract the min, rescale, and offset appropriately.

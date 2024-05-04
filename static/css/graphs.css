@@ -365,7 +365,14 @@ img {
   transition: opacity 100ms;
   opacity: 0;
 }
+.GraphNavigation.hideStates .State > img {
+  transition: opacity 100ms;
+  opacity: 0;
+}
 .GraphNavigation.hideStates .State.is-visible > .GraphReward {
+  opacity: 1;
+}
+.GraphNavigation.hideStates .State.is-visible > img {
   opacity: 1;
 }
 
@@ -400,6 +407,18 @@ img {
 
 .HighlightedState {
     border: 5px solid darkblue;
+}
+
+.state-incorrect {
+    transition: opacity 0ms;
+    border: 2px solid #9E0002 !important;
+    background-color: #FFCECF !important;
+}
+
+.state-correct {
+    transition: opacity 0ms;
+    border: 2px solid #0F7003 !important;
+    background-color: #C1EABC !important;
 }
 
 .GraphNavigation.SomeHighlighted .GraphNavigation-edge {

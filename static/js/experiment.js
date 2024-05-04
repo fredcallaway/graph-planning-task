@@ -8,7 +8,8 @@ async function runExperiment() {
 
   // load configuration and set up parameters
   const config = await $.getJSON(`static/json/config/${CONDITION+1}.json`)
-  PARAMS = _.merge({
+  window.config = config
+  PARAMS = _.defaults(config.parameters, {
     eye_tracking: false,
     hover_edges: true,
     hover_rewards: true,
@@ -21,7 +22,7 @@ async function runExperiment() {
     show_predecessors: false,
     show_successor_rewards: false,
     reveal_by: 'hover',
-    revealed: true,
+    revealed: false,
     score_limit: 300,
     time_limit: undefined,
     points_per_cent: 3,
@@ -38,7 +39,8 @@ async function runExperiment() {
       "static/images/toothbrush.png",
       "static/images/zebra.png",
     ]
-  }, config.parameters)
+  })
+
   console.log('config.parameters', config.parameters)
 
   PARAMS.graphRenderOptions = {
@@ -125,7 +127,6 @@ async function runExperiment() {
 
       // let start_message = PARAMS.score_limit ?
       //   `You're ${PARAMS.score_limit - score.score} points away from finishing` :
-        bonus.reportBonus()
       let cg = new CircleGraph({...PARAMS, ...trial})
       await cg.run(workspace)
       timer.pause()
@@ -134,6 +135,85 @@ async function runExperiment() {
       saveData()
     }
   }
+
+
+  async function learnLocations() {
+    DISPLAY.empty()
+    let workspace = $('<div>').appendTo(DISPLAY)
+
+    let prompt = $('<div>')
+    .addClass('text instructions')
+    .css({
+      height: 200,
+      marginTop: 20,
+      marginLeft: 200
+    })
+    .appendTo(workspace)
+
+
+    prompt.html(`
+      <h1>Stage 2</h1>
+      Now we're going to make sure you've learned where each image is.
+      When an image appears, click its location on the board. You
+      can continue when you get every one right.
+      <br><br>
+    `)
+
+    await button(prompt, 'continue').promise()
+
+    let images = PARAMS.images
+    let N = images.length + 1
+    let graph = Array(N).fill([])
+    let cg = new CircleGraph({...PARAMS, start: 0, graph})
+    cg.attach(workspace)
+    // cg.setCurrentState(cg.options.start)
+    cg.showGraph()
+    let img = $('<img>').prop({width: 80})
+    .addClass('absolute-centered')
+    .appendTo(cg.root)
+
+    let errors = -1
+    while (errors != 0) {
+      // BEGIN ROUND
+
+      // show all states
+      img.hide()
+      $(`.GraphNavigation-State`).addClass('is-visible')
+      await button(cg.root, 'start', {
+        post_delay: 0,
+        persistent: false,
+        cls: 'absolute-centered',
+      }).promise()
+      $(`.GraphNavigation-State`).removeClass('is-visible')
+      img.show()
+
+      // query states one by one
+      errors = 0
+      for (let t of _.shuffle(_.range(1, N))) {
+        console.log('t', t)
+        // BEGIN TRIAL
+        img.prop({src: images[t-1]})
+
+        let clicked = await cg.clickStatePromise()
+        // feedback
+        cg.showState(t)
+        if (clicked == t) {
+          cg.queryState(clicked).addClass('state-correct')
+          await sleep(500)
+        } else {
+          cg.queryState(clicked).addClass('state-incorrect')
+          errors += 1
+          await sleep(1000)
+        }
+        // hide feedback
+        cg.queryState(clicked).removeClass('state-correct state-incorrect')
+        cg.hideState(t)
+      }
+    }
+
+    img.hide()
+  }
+
 
   async function motivation() {
     DISPLAY.empty()
@@ -193,10 +273,11 @@ async function runExperiment() {
   // using runTimeline is optional, but it allows you to jump to different blocks
   // with url parameters, e.g. http://localhost:8000/?block=main
   await runTimeline(
-    instructions,
+    // instructions,
+    learnLocations,
     main,
-    motivation,
-    survey,
-    debrief
+    // motivation,
+    // survey,
+    // debrief
   )
 };
