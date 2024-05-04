@@ -73,7 +73,7 @@ class CircleGraph {
 
     window.cg = this
 
-    this.rewards = _.clone(options.rewards ?? Array(options.graph.length).fill(0))
+    this.rewards = _.clone(options.rewards ?? Array(options.images.length+1).fill(0))
     this.onStateVisit = options.onStateVisit ?? ((s) => {})
     this.score = options.score ?? 0
 
@@ -81,13 +81,15 @@ class CircleGraph {
     // options.reward_graphics[0] = options.reward_graphics[0] ?? ""
     // options.graphics = this.rewards.map(x => options.reward_graphics[x])
 
-    this.graph = new Graph(options.graph)
+    this.graph = new Graph(options.graph ?? Array(options.images.length+1).fill([]))
     this.el = renderCircleGraph(
       this.graph, options.goal,
       {
         edgeShow: options.edgeShow,
         successorKeys: options.successorKeys,
+        stateGraphics: options.images,
         ...options.graphRenderOptions,
+
       }
     )
     if (options.consume) {
@@ -118,12 +120,79 @@ class CircleGraph {
   async run(display) {
     if (display) this.attach(display)
 
-    this.setCurrentState(this.options.start)
-    await this.showStartScreen()
-    // if (!this.options.revealed) {
-    //   await this.plan()
-    // }
-    await this.navigate()
+    if (this.options.mode == 'locationQuiz') {
+      return await this.locationQuiz()
+    } else {
+      this.setCurrentState(this.options.start)
+      await this.showStartScreen()
+      // if (!this.options.revealed) {
+      //   await this.plan()
+      // }
+      await this.navigate()
+    }
+  }
+
+  async locationQuiz() {
+    logEvent('graph.locationQuiz')
+    let images = this.options.images
+    let N = images.length + 1
+    this.options.graph = Array(N).fill([])
+    // this.setCurrentState(this.options.start)
+    this.showGraph()
+    let img = $('<img>').prop({width: 80})
+    .addClass('absolute-centered')
+    .appendTo(this.root)
+
+
+    // show all states
+    img.hide()
+    $(`.GraphNavigation-State`).addClass('is-visible')
+    await button(this.root, 'start', {
+      post_delay: 0,
+      persistent: false,
+      cls: 'absolute-centered',
+    }).promise()
+    $(`.GraphNavigation-State`).removeClass('is-visible')
+    img.show()
+
+    // query states one by one
+    let errors = 0
+    // for (let t of _.shuffle(_.range(1, N))) {
+    for (let t of [1, 4]) {
+      img.prop({src: images[t-1]})
+
+      if (this.options.clickTime) {
+        let timeout = sleep(this.options.clickTime)
+        let clicked
+      }
+
+      let clicked = await this.clickStatePromise(undefined, this.options.timeLimit)
+      console.log('clicked', clicked)
+      // feedback
+      this.showState(t)
+      if (clicked == t) {
+        this.queryState(clicked).addClass('state-correct')
+        await sleep(500)
+      } else if (clicked == 'timeout') {
+        img.hide()
+        let msg = $('<h2>').text('too slow!')
+        .addClass('absolute-centered')
+        .css({color: 'red', top: '45%'})
+        .appendTo(this.root)
+        await sleep(2000)
+        msg.remove()
+        img.show()
+      } else {
+        this.queryState(clicked).addClass('state-incorrect')
+        errors += 1
+        await sleep(1000)
+      }
+      this.queryState(clicked).removeClass('state-correct state-incorrect')
+      this.hideState(t)
+    }
+
+    img.hide()
+    return errors
   }
 
   logEvent(event, info={}) {
@@ -544,8 +613,12 @@ class CircleGraph {
     this.logEvent('graph.forced.end')
   }
 
-  clickStatePromise(state) {
+  clickStatePromise(state, timeLimit=null) {
     return new Promise((resolve, reject) => {
+      if (timeLimit) {
+        console.log('timeLimit', timeLimit)
+        sleep(timeLimit).then(()=>resolve('timeout'))
+      }
       if (state == undefined) {
         $('.GraphNavigation-State').on('click', function() {
           $('.GraphNavigation-State').off('click')

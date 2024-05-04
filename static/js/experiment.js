@@ -45,7 +45,6 @@ async function runExperiment() {
 
   PARAMS.graphRenderOptions = {
     onlyShowCurrentEdges: false,
-    stateGraphics: PARAMS.images,
     width: 800,
     height: 600,
     scaleEdgeFactor: 1,
@@ -139,79 +138,69 @@ async function runExperiment() {
 
   async function learnLocations() {
     DISPLAY.empty()
-    let workspace = $('<div>').appendTo(DISPLAY)
 
     let prompt = $('<div>')
     .addClass('text instructions')
     .css({
       height: 200,
       marginTop: 20,
-      marginLeft: 200
+      width: 600
+      // marginLeft: 200
     })
-    .appendTo(workspace)
+    .appendTo(DISPLAY)
 
+    let cgDiv = $('<div>').appendTo(DISPLAY)
 
-    prompt.html(`
-      <h1>Stage 2</h1>
-      Now we're going to make sure you've learned where each image is.
-      When an image appears, click its location on the board. You
-      can continue when you get every one right.
-      <br><br>
-    `)
-
-    await button(prompt, 'continue').promise()
-
-    let images = PARAMS.images
-    let N = images.length + 1
-    let graph = Array(N).fill([])
-    let cg = new CircleGraph({...PARAMS, start: 0, graph})
-    cg.attach(workspace)
-    // cg.setCurrentState(cg.options.start)
-    cg.showGraph()
-    let img = $('<img>').prop({width: 80})
-    .addClass('absolute-centered')
-    .appendTo(cg.root)
-
-    let errors = -1
-    while (errors != 0) {
-      // BEGIN ROUND
-
-      // show all states
-      img.hide()
-      $(`.GraphNavigation-State`).addClass('is-visible')
-      await button(cg.root, 'start', {
-        post_delay: 0,
-        persistent: false,
-        cls: 'absolute-centered',
-      }).promise()
-      $(`.GraphNavigation-State`).removeClass('is-visible')
-      img.show()
-
-      // query states one by one
-      errors = 0
-      for (let t of _.shuffle(_.range(1, N))) {
-        console.log('t', t)
-        // BEGIN TRIAL
-        img.prop({src: images[t-1]})
-
-        let clicked = await cg.clickStatePromise()
-        // feedback
-        cg.showState(t)
-        if (clicked == t) {
-          cg.queryState(clicked).addClass('state-correct')
-          await sleep(500)
-        } else {
-          cg.queryState(clicked).addClass('state-incorrect')
-          errors += 1
-          await sleep(1000)
-        }
-        // hide feedback
-        cg.queryState(clicked).removeClass('state-correct state-incorrect')
-        cg.hideState(t)
-      }
+    async function showPrompt(html) {
+      prompt.show(); cgDiv.hide()
+      prompt.html(html + '<br><br>')
+      await button(prompt, 'continue').promise()
+      prompt.hide(); cgDiv.show()
     }
 
-    img.hide()
+    // showPrompt(`
+    //   <h1>Stage 2</h1>
+    //   Now we're going to make sure you've learned where each image is.
+    //   When an image appears, click its location on the board. You
+    //   can continue when you get every image correct.
+    // `)
+
+    // let errors = null
+    // for (i of _.range(10)) {
+    //   logEvent(`experiment.learn.1.${i+1}`)
+    //   let cg = new CircleGraph({...PARAMS, start: 0, mode: 'locationQuiz'})
+    //   errors = await cg.run(cgDiv)
+    //   if (errors) {
+    //     showPrompt(`
+    //       <h1>Stage 2</h1>
+    //       You made at least one mistake on that round. Let's try again!
+    //     `)
+    //   } else {
+    //     break
+    //   }
+    // }
+
+    showPrompt(`
+      <h1>Stage 2</h1>
+      Well done! Now we're going to make it a bit harder. This time, you have
+      to click the correct location within one second of the image appearing.
+      If you're too slow, it will count as a mistake.
+    `)
+
+    for (i of _.range(10)) {
+      logEvent(`experiment.learn.2.${i+1}`)
+      let cg = new CircleGraph({...PARAMS, start: 0, mode: 'locationQuiz', timeLimit: 1000})
+      errors = await cg.run(cgDiv)
+      if (errors) {
+        prompt.html(`
+          <h1>Stage 2</h1>
+          You made at least one mistake on that round. Let's try again!<br><br>
+        `)
+        prompt.show(); cgDiv.hide()
+        await button(prompt, 'continue').promise()
+        prompt.hide(); cgDiv.show()
+      }
+    }
   }
 
 
