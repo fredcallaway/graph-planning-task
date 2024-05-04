@@ -135,7 +135,6 @@ async function runExperiment() {
     }
   }
 
-
   async function learnLocations() {
     DISPLAY.empty()
 
@@ -158,49 +157,44 @@ async function runExperiment() {
       prompt.hide(); cgDiv.show()
     }
 
-    // showPrompt(`
-    //   <h1>Stage 2</h1>
-    //   Now we're going to make sure you've learned where each image is.
-    //   When an image appears, click its location on the board. You
-    //   can continue when you get every image correct.
-    // `)
+    await showPrompt(`
+      <h1>Stage 2 (Round 1/3)</h1>
 
-    // let errors = null
-    // for (i of _.range(10)) {
-    //   logEvent(`experiment.learn.1.${i+1}`)
-    //   let cg = new CircleGraph({...PARAMS, start: 0, mode: 'locationQuiz'})
-    //   errors = await cg.run(cgDiv)
-    //   if (errors) {
-    //     showPrompt(`
-    //       <h1>Stage 2</h1>
-    //       You made at least one mistake on that round. Let's try again!
-    //     `)
-    //   } else {
-    //     break
-    //   }
-    // }
+      Now we're going to make sure you've learned where each image is. When an
+      image appears, click its location on the board. You can continue to the
+      next stage when you get every image correct without making any mistakes.
+    `)
 
-    showPrompt(`
-      <h1>Stage 2</h1>
+    logEvent(`experiment.learn.1`)
+    let cg = new CircleGraph({...PARAMS, start: 0, mode: 'locationQuiz'})
+    await cg.run(cgDiv)
+
+    await showPrompt(`
+      <h1>Stage 2 (Round 2/3)</h1>
       Well done! Now we're going to make it a bit harder. This time, you have
-      to click the correct location within one second of the image appearing.
+      to click the correct location within <b>3 seconds</b> of the image appearing.
       If you're too slow, it will count as a mistake.
     `)
 
-    for (i of _.range(10)) {
-      logEvent(`experiment.learn.2.${i+1}`)
-      let cg = new CircleGraph({...PARAMS, start: 0, mode: 'locationQuiz', timeLimit: 1000})
-      errors = await cg.run(cgDiv)
-      if (errors) {
-        prompt.html(`
-          <h1>Stage 2</h1>
-          You made at least one mistake on that round. Let's try again!<br><br>
-        `)
-        prompt.show(); cgDiv.hide()
-        await button(prompt, 'continue').promise()
-        prompt.hide(); cgDiv.show()
-      }
-    }
+    logEvent(`experiment.learn.2`)
+    cg = new CircleGraph({...PARAMS, start: 0, mode: 'locationQuiz', timeLimit: 3000})
+    await cg.run(cgDiv)
+
+    await showPrompt(`
+      <h1>Stage 2 (Round 3/3)</h1>
+      Great! In this final round, you only have <b>1.5 seconds</b> to make your response.
+      Good luck!
+    `)
+
+    logEvent(`experiment.learn.3`)
+    cg = new CircleGraph({...PARAMS, start: 0, mode: 'locationQuiz', timeLimit: 1500})
+    await cg.run(cgDiv)
+
+    await showPrompt(`
+      <h1>Stage 2</h1>
+      Awesome! It looks like you've learned where all the images live.
+    `)
+    await makePromise()
   }
 
 
