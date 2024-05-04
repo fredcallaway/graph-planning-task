@@ -132,6 +132,7 @@ async function runExperiment() {
       start_message = undefined
       show_locations = false
       if (i % 10 == 0) {
+        logEvent("experiment.main.progress")
         start_message = bonus.reportBonus()
         show_locations = true
       }
@@ -151,6 +152,10 @@ async function runExperiment() {
   async function mainHidden() {
     await main(trials.main_hidden, true)
   }
+  async function mainHiddenAlt() {
+    let tt = trials.main_hidden.map(t => ({...t, hide_states: true, hover_edges: false}))
+    await main(tt, false)
+  }
 
   async function learnLocations() {
     DISPLAY.empty()
@@ -160,7 +165,7 @@ async function runExperiment() {
     .css({
       height: 200,
       marginTop: 20,
-      width: 600
+      width: 800
       // marginLeft: 200
     })
     .appendTo(DISPLAY)
@@ -292,6 +297,7 @@ async function runExperiment() {
     mainRevealed,
     learnLocations,
     mainHidden,
+    mainHiddenAlt,
     // motivation,
     // survey,
     // debrief
