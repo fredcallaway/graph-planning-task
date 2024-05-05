@@ -34,7 +34,7 @@ class GraphInstructions extends Instructions {
   }
 
   async stage_intro() {
-    let trial = {...this.trials.intro[0], revealed: true}
+    let trial = {...this.trials.intro[0], revealed: true, description: null}
     let cg = new CircleGraph(trial).attach(this.content);
     $(`.GraphNavigation-State img`).hide()
     cg.showGraph()
@@ -70,7 +70,7 @@ class GraphInstructions extends Instructions {
     this.setPrompt(`
       The goal of the game is to collect these images. Try it out!
     `)
-    let trial = {...this.trials.intro[1], revealed: true}
+    let trial = {...this.trials.intro[1], revealed: true, description: null}
     cg = new CircleGraph(trial).attach(this.content);
     cg.showGraph()
     cg.setCurrentState(trial.start)
