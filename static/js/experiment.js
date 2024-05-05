@@ -295,6 +295,7 @@ async function runExperiment() {
     instructions,
     mainRevealed,
     learnLocations,
+    mainHidden,
     motivation,
     // survey,
     debrief

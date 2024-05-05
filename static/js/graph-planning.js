@@ -60,6 +60,7 @@ class CircleGraph {
       keep_hover: true,
       revealed: false,
     })
+    window.cg = this
     // successorKeys:  options.graphRenderOptions.successorKeys
     this.trialId = crypto.randomUUID()
     this.logEvent('graph.construct', _.pick(this.options,
@@ -71,12 +72,16 @@ class CircleGraph {
       textAlign: 'center',
     })
 
-    window.cg = this
+    if (this.options.description) {
+      this.full_description = `
+        <b>${numString(this.options.value, 'point')}</b>
+        for items matching: <b>${this.options.description}</b>
+      `
+    }
 
     this.rewards = _.clone(options.rewards ?? Array(options.images.length+1).fill(0))
     this.onStateVisit = options.onStateVisit ?? ((s) => {})
     this.score = options.score ?? 0
-
 
     // options.reward_graphics[0] = options.reward_graphics[0] ?? ""
     // options.graphics = this.rewards.map(x => options.reward_graphics[x])
@@ -320,6 +325,10 @@ class CircleGraph {
     this.logEvent('graph.showGraph')
     // this.setupEyeTracking()
 
+    $('<p>').html(this.full_description)
+    .css({transform: 'translate(0, -30px)'})
+    .appendTo(this.el)
+
     if (this.options.hide_states || this.options.hover_rewards) this.el.classList.add('hideStates');
     if (this.options.hide_edges || this.options.hover_edges) this.el.classList.add('hideEdges');
     $(`.ShadowState .GraphReward`).remove()
@@ -416,9 +425,7 @@ class CircleGraph {
 
   describeRewards() {
     let div = $('<div>').addClass('describe-rewards')
-    $('<p>').html(`
-      <b>${numString(this.options.value, 'point')}</b>
-      for items matching: <b>${this.options.description}</b>`)
+    $('<p>').html(this.full_description)
     .css({marginTop: 100})
     .appendTo(div)
     let imgs = $('<div>').addClass('describe-rewards-box').appendTo(div)
