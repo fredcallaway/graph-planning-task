@@ -218,11 +218,11 @@ async function runExperiment() {
 
     await showPrompt(`
       <h1>Memory Check (3/3)</h1>
-      Great! In this final round, you only have <b>1.5 seconds</b> to make your response.
+      Great! In this final round, you only have <b>2 seconds</b> to make your response.
     `)
 
     logEvent(`experiment.learn.3`)
-    cg = new CircleGraph({...PARAMS, start: 0, mode: 'locationQuiz', timeLimit: 1500})
+    cg = new CircleGraph({...PARAMS, start: 0, mode: 'locationQuiz', timeLimit: 2000})
     await cg.run(cgDiv)
 
     await showPrompt(`
