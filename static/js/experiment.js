@@ -129,12 +129,12 @@ async function runExperiment() {
       // let start_message = PARAMS.score_limit ?
       //   `You're ${PARAMS.score_limit - SCORE.score} points away from finishing` :
 
-      start_message = undefined
-      show_locations = false
+      let start_message = undefined
+      let show_locations = false
       if (i % 10 == 0) {
         logEvent("experiment.main.progress")
         start_message = bonus.reportBonus()
-        show_locations = true
+        show_locations = hidden
       }
       let cg = new CircleGraph({...PARAMS, ...trial, start_message, show_locations})
 
