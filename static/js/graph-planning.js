@@ -138,7 +138,7 @@ class CircleGraph {
     $(`.GraphNavigation-State`).removeClass('is-visible')
   }
 
-  async locationQuiz() {
+  async locationQuizAlt() {
     logEvent('graph.quiz.start')
     this.el.classList.add('hideStates')
     let images = this.options.images
@@ -196,6 +196,105 @@ class CircleGraph {
 
       // reset on error
       if (clicked != target) {
+        await showAll()
+        todo = _.shuffle(_.range(1, N))
+      }
+    }
+  }
+
+  async locationQuiz() {
+    logEvent('graph.quiz.start')
+    this.el.classList.add('hideStates')
+    let images = this.options.images
+    let N = images.length + 1
+    this.options.graph = Array(N).fill([])
+    // this.setCurrentState(this.options.start)
+    this.showGraph()
+
+
+    // let img = $('<img>').prop({width: 80, src: images[0]}).css({border: 'thin black solid', width: 80, height: 80}).appendTo($('body'))
+    // let img = $('<div>').css({width: 80, height: 80, backgroundColor: 'red'}).appendTo($('body'))
+    // await sleep(30)
+    // window.img = img
+    // img.on('click', () => console.log('clikc'))
+
+
+
+    let imgArray = $("<div>")
+    .addClass('absolute-centered')
+    .css({width: 250})
+    .appendTo(this.root)
+
+    let imgDivs = images.map(src => {
+      // for some reason we have to wrap the image in a div for click to work???
+      let i = $('<img>').addClass('quiz-image').prop({width: 80, src})
+      return $('<div>').append(i).css({
+        display: 'inline-flex',
+        border: '2px white solid',
+        cursor: 'pointer'
+      })
+    })
+
+    for (let img of _.shuffle(imgDivs)) {
+      img.appendTo(imgArray)
+    }
+
+    // show all states
+    let showAll = async () => {
+      logEvent('graph.quiz.showAll')
+      imgArray.hide()
+      await this.showImageLocations()
+      imgArray.show()
+    }
+
+
+    await showAll()
+    let done = false
+    // query states one by one
+    let todo = _.shuffle(_.range(1, N))
+    while (todo.length) {
+      let target = todo.pop()
+      await sleep(500)
+      logEvent('graph.quiz.prompt', {target})
+      this.highlight(target)
+      let clicked = Promise.any(imgDivs.entries().map(([i, img]) => {
+        return new Promise((resolve, reject) => {
+          img.click(() => {
+            resolve(i + 1)
+          })
+        })
+      }))
+      let timeout = sleep(this.options.timeLimit ?? 1e10)
+      let response = await Promise.any([clicked, timeout])
+      console.log("YO")
+      this.unhighlight(target)
+
+      // feedback
+      this.showState(target)
+      if (response == target) {
+        logEvent('graph.quiz.correct', {target})
+        this.queryState(target).addClass('state-correct')
+        await sleep(500)
+      } else if (response == undefined) {
+        logEvent('graph.quiz.timeout', {target})
+        imgArray.hide()
+        this.queryState(target).addClass('state-incorrect')
+        let msg = $('<h2>').text('too slow!')
+        .addClass('absolute-centered')
+        .css({color: 'red', top: '45%'})
+        .appendTo(this.root)
+        await sleep(2000)
+        msg.remove()
+      } else {
+        this.queryState(target).addClass('state-incorrect')
+        logEvent('graph.quiz.error', {target, response})
+        await sleep(1000)
+      }
+      this.queryState(target).removeClass('state-correct state-incorrect')
+      this.hideState(target)
+
+      // reset on error
+      if (response != target) {
         await showAll()
         todo = _.shuffle(_.range(1, N))
       }

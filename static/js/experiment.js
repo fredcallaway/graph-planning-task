@@ -185,7 +185,6 @@ async function runExperiment() {
       Great job! In Stage 1, you earned $${bonus.dollars().toFixed('2')}.
       But don't get too confident—this next stage is going to be tougher!
     `)
-    await this.button()
 
     await showPrompt(`
       <h1> Stage 2</h1>
@@ -193,7 +192,6 @@ async function runExperiment() {
       Specifically, we're not going to show you the images anymore. You'll have
       to remember where the images are located if you want to keep earning points!
     `)
-    await this.button()
 
     await showPrompt(`
       <h1>Memory Check (1/3)</h1>
