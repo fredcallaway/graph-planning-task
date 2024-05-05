@@ -319,12 +319,12 @@ img {
 .State {
   border: 1px solid #555;
   border-radius: 5px;
-  width: 10rem;
+/*  width: 10rem;*/
   line-height: 8rem;
   font-size: 4rem;
   font-weight: 400;
   line-height: 50px;
-  height: 10rem;
+/*  height: 10rem;*/
   padding: 0.5rem;
   box-sizing: border-box;
   transition: background-color 300ms;
@@ -341,7 +341,7 @@ img {
 .State img {
   position: static;
 /*  float: left;*/
-  width: 4rem;
+  width: 5.5rem;
 }
 
 .State.GraphNavigation-current img {
