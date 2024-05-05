@@ -125,8 +125,10 @@ class CircleGraph {
   async run(display) {
     if (display) this.attach(display)
 
-    if (this.options.mode == 'locationQuiz') {
-      return await this.locationQuiz()
+    if (this.options.mode == 'quizLocation') {
+      return await this.quizLocationImage()
+    } else if (this.options.mode == 'quizImage') {
+      return await this.quizImageLocation()
     } else {
       this.setCurrentState(this.options.start)
       await this.showStartScreen()
@@ -143,8 +145,8 @@ class CircleGraph {
     $(`.GraphNavigation-State`).removeClass('is-visible')
   }
 
-  async locationQuizAlt() {
-    logEvent('graph.quiz.start')
+  async quizImageLocation() {
+    logEvent('graph.quiz.image.start.')
     this.el.classList.add('hideStates')
     let images = this.options.images
     let N = images.length + 1
@@ -154,10 +156,12 @@ class CircleGraph {
     let img = $('<img>').prop({width: 80})
     .addClass('absolute-centered')
     .appendTo(this.root)
+    $(`.GraphNavigation-State`).css({cursor: 'pointer'})
+
 
     // show all states
     let showAll = async () => {
-      logEvent('graph.quiz.showAll')
+      logEvent('graph.quiz.image.showAll')
       img.hide()
       await this.showImageLocations()
       img.show()
@@ -171,7 +175,7 @@ class CircleGraph {
       let target = todo.pop()
       img.show()
       img.prop({src: images[target-1]})
-      logEvent('graph.quiz.prompt', {target})
+      logEvent('graph.quiz.image.prompt', {target})
 
       let clicked = await this.clickStatePromise(undefined, this.options.timeLimit)
       img.hide()
@@ -179,11 +183,11 @@ class CircleGraph {
       // feedback
       this.showState(target)
       if (clicked == target) {
-        logEvent('graph.quiz.correct', {target})
+        logEvent('graph.quiz.image.correct', {target})
         this.queryState(clicked).addClass('state-correct')
         await sleep(500)
       } else if (clicked == 'timeout') {
-        logEvent('graph.quiz.timeout', {target})
+        logEvent('graph.quiz.image.timeout', {target})
         img.hide()
         let msg = $('<h2>').text('too slow!')
         .addClass('absolute-centered')
@@ -192,7 +196,7 @@ class CircleGraph {
         await sleep(2000)
         msg.remove()
       } else {
-        logEvent('graph.quiz.error', {target, clicked})
+        logEvent('graph.quiz.image.error', {target, clicked})
         this.queryState(clicked).addClass('state-incorrect')
         await sleep(1000)
       }
@@ -207,23 +211,13 @@ class CircleGraph {
     }
   }
 
-  async locationQuiz() {
-    logEvent('graph.quiz.start')
+  async quizLocationImage() {
+    logEvent('graph.quiz.location.start')
     this.el.classList.add('hideStates')
     let images = this.options.images
     let N = images.length + 1
     this.options.graph = Array(N).fill([])
-    // this.setCurrentState(this.options.start)
     this.showGraph()
-
-
-    // let img = $('<img>').prop({width: 80, src: images[0]}).css({border: 'thin black solid', width: 80, height: 80}).appendTo($('body'))
-    // let img = $('<div>').css({width: 80, height: 80, backgroundColor: 'red'}).appendTo($('body'))
-    // await sleep(30)
-    // window.img = img
-    // img.on('click', () => console.log('clikc'))
-
-
 
     let imgArray = $("<div>")
     .addClass('absolute-centered')
@@ -246,12 +240,11 @@ class CircleGraph {
 
     // show all states
     let showAll = async () => {
-      logEvent('graph.quiz.showAll')
+      logEvent('graph.quiz.location.showAll')
       imgArray.hide()
       await this.showImageLocations()
       imgArray.show()
     }
-
 
     await showAll()
     let done = false
@@ -260,7 +253,7 @@ class CircleGraph {
     while (todo.length) {
       let target = todo.pop()
       await sleep(500)
-      logEvent('graph.quiz.prompt', {target})
+      logEvent('graph.quiz.location.prompt', {target})
       this.highlight(target)
       let clicked = Promise.any(imgDivs.entries().map(([i, img]) => {
         return new Promise((resolve, reject) => {
@@ -277,11 +270,11 @@ class CircleGraph {
       // feedback
       this.showState(target)
       if (response == target) {
-        logEvent('graph.quiz.correct', {target})
+        logEvent('graph.quiz.location.correct', {target})
         this.queryState(target).addClass('state-correct')
         await sleep(500)
       } else if (response == undefined) {
-        logEvent('graph.quiz.timeout', {target})
+        logEvent('graph.quiz.location.timeout', {target})
         imgArray.hide()
         this.queryState(target).addClass('state-incorrect')
         let msg = $('<h2>').text('too slow!')
@@ -292,7 +285,7 @@ class CircleGraph {
         msg.remove()
       } else {
         this.queryState(target).addClass('state-incorrect')
-        logEvent('graph.quiz.error', {target, response})
+        logEvent('graph.quiz.location.error', {target, response})
         await sleep(1000)
       }
       this.queryState(target).removeClass('state-correct state-incorrect')
