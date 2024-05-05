@@ -204,8 +204,8 @@ function make_trials(; perm)
         practice_revealed = [sample_trial(perm) for i in 1:3],
         main = [sample_trial(perm) for i in 1:30],
         intro_hover = [sample_trial(perm)],
-        main_revealed = [sample_trial(perm, hover_edges=true) for i in 1:200],
-        main_hidden = [sample_trial(perm, hover_edges=true, hide_states=true) for i in 1:200],
+        main_revealed = [sample_trial(perm) for i in 1:200],
+        main_hidden = [sample_trial(perm) for i in 1:200],
         # calibration = intro,
         # eyetracking = [sample_problem(;kws..., n_steps) for n_steps in shuffle(repeat(3:5, 7))]
     )

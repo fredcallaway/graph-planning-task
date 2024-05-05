@@ -9,6 +9,13 @@ class GraphInstructions extends Instructions {
     super({...options, promptHeight: 100, width: 800})
     this.trials = options.trials
     window.instruct = this
+
+
+    if (!PARAMS.use_process_tracing) {
+      this.stages = this.stages.filter(stage => {
+        return !stage.name.startsWith('stage_hover')
+      })
+    }
   }
 
   // the stages run in the order that they're defined

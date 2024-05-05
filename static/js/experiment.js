@@ -12,6 +12,7 @@ async function runExperiment() {
   const config = await $.getJSON(`static/json/config/${CONDITION+1}.json`)
   window.config = config
   PARAMS = _.defaults(config.parameters, {
+    use_process_tracing: false,
     eye_tracking: false,
     hover_edges: false,
     hover_rewards: false,
@@ -136,7 +137,7 @@ async function runExperiment() {
         start_message = bonus.reportBonus()
         show_locations = hidden
       }
-      let cg = new CircleGraph({...PARAMS, ...trial, start_message, show_locations})
+      let cg = new CircleGraph({...PARAMS, ...trial, start_message, show_locations, hover_edges: PARAMS.use_process_tracing})
 
       await cg.run(workspace)
       timer.pause()
@@ -294,10 +295,8 @@ async function runExperiment() {
     instructions,
     mainRevealed,
     learnLocations,
-    mainHidden,
-    mainHiddenAlt,
-    // motivation,
+    motivation,
     // survey,
-    // debrief
+    debrief
   )
 };
