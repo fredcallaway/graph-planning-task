@@ -25,7 +25,11 @@ class Bonus {
     return `Your current bonus is $${this.dollars().toFixed('2')}`
   }
   describeScheme() {
-    return "one cent for every " + numString(this.points_per_cent, "point", {skip_one: true})
+    if (this.points_per_cent < 1) {
+      assert(false, "points_per_cent must be a natural number")
+    } else {
+      return "one cent for every " + numString(this.points_per_cent, "point", {skip_one: true})
+    }
   }
 }
 

@@ -132,7 +132,7 @@ async function runExperiment() {
 
       let start_message = undefined
       let show_locations = false
-      if (i % 10 == 0) {
+      if (i % 10 == 9) {
         logEvent("experiment.main.progress")
         start_message = bonus.reportBonus()
         show_locations = hidden
@@ -299,7 +299,10 @@ async function runExperiment() {
       # You're done!
 
       If you have any feedback please provide it below (feel free to leave it empty!)
+
+      <b>We are testing out a new experiment so feedback is really useful for us!</b>
     `))
+
 
     let feedback = text_box(div)
 
