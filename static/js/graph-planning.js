@@ -63,9 +63,7 @@ class CircleGraph {
     window.cg = this
     // successorKeys:  options.graphRenderOptions.successorKeys
     this.trialId = crypto.randomUUID()
-    this.logEvent('graph.construct', _.pick(this.options,
-      'graph', 'n_steps', 'rewards', 'start', 'hover_edges', 'hover_rewards', 'expansions'
-    ))
+    this.logEvent('graph.construct', this.options)
     this.root = $("<div>")
     .css({
       position: 'relative',
