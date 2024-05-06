@@ -130,7 +130,7 @@ class CircleGraph {
     } else {
       this.setCurrentState(this.options.start)
       await this.showStartScreen()
-      if (this.options.hover_edges || this.options.hover_states) {
+      if (this.options.hover_edges || this.options.hover_states || this.options.two_stage) {
         await this.plan()
       }
       await this.navigate()
@@ -448,7 +448,8 @@ class CircleGraph {
     if (this.planningPhaseActive) return
     this.planningPhaseActive = true
 
-    $('.GraphNavigation').css('opacity', .7)
+    // $('.GraphNavigation').css('opacity', .7)
+    $(this.el).addClass('imagination')
 
 
     let transition = '200ms'
@@ -503,7 +504,12 @@ class CircleGraph {
     })
     await ready
     this.logEvent('graph.imagination.end')
+    this.hideAllEdges()
+    this.el.classList.add('hideEdges')
+    this.el.classList.add('hideStates')
+    $(this.el).removeClass('imagination')
     this.planningPhaseActive = false
+    this.hover(this.state)
     $('.GraphNavigation').css('opacity', 1)
     $(`.GraphNavigation-State`).removeClass('PathIdentification-selectable')
     $('.GraphNavigation-arrow,.GraphReward,.GraphNavigation-edge').css('transition', '')
@@ -786,6 +792,7 @@ class CircleGraph {
 
   showEdge(state, successor) {
     $(`.GraphNavigation-edge-${state}-${successor}`).addClass('is-visible')
+    $(`.GraphNavigation-arrow-${state}-${successor}`).addClass('is-visible')
   }
 
   hideEdge(state, successor) {
@@ -809,7 +816,7 @@ class CircleGraph {
       if (this.options.show_hovered_reward) this.showState(state)
       $(`.GraphNavigation-State-${state}`).addClass('hovered')
     }
-    if (this.options.hover_edges) {
+    if (this.options.hover_edges || this.options.two_stage) {
       for (const successor of this.graph.successors(state)) {
         this.showEdge(state, successor)
         if (this.options.show_successor_rewards) this.showState(successor)

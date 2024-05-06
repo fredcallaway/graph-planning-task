@@ -205,11 +205,6 @@ img {
   z-index: -1;
 /*  background-color: red;*/
 }
-.GraphNavigation-currentEdge {
-/*  opacity: 1 !important;*/
-  transition: background-color 300ms;
-  z-index: 1 !important;
-}
 
 .GraphNavigation-highlight-current-edge .GraphNavigation-currentEdge {
 /*  height: 2px;*/
@@ -248,6 +243,11 @@ img {
 .GraphNavigation.withGraphic .GraphNavigation-current {
 /*  background-image: none;*/
   background-color: #1B79FF !important;
+}
+
+.GraphNavigation.withGraphic.imagination .GraphNavigation-current {
+  transition: opacity 0ms ;
+  background-color: #F2384A !important;
 }
 
 .GraphNavigation.withGraphic .hovered {

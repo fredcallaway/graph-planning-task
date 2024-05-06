@@ -185,7 +185,7 @@ async function showCompletionScreen() {
 
 
 function handleError(e) {
-  logEvent('experiment.error', e)
+  logEvent('experiment.error', {error: JSON.stringify(e)})
   let msg = e.stack?.length > 10 ? e.stack : `${e}`;
   const workerIdMessage = typeof workerId !== "undefined" && workerId !== null ? workerId : 'N/A';
   const message = `Prolific Id: ${workerIdMessage}\n${msg}`;

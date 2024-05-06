@@ -12,6 +12,7 @@ async function runExperiment() {
   const config = await $.getJSON(`static/json/config/${CONDITION+1}.json`)
   window.config = config
   PARAMS = _.defaults(config.parameters, {
+    two_stage: true,
     use_process_tracing: false,
     eye_tracking: false,
     hover_edges: false,
