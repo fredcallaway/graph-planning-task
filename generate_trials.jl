@@ -202,6 +202,7 @@ function make_trials(; perm)
             sample_trial(perm; n_feature=3, value=3),
         ],
         practice_revealed = [sample_trial(perm) for i in 1:3],
+        practice_twostage = [sample_trial(perm) for i in 1:3],
         main = [sample_trial(perm) for i in 1:30],
         intro_hover = [sample_trial(perm)],
         main_revealed = [sample_trial(perm) for i in 1:200],

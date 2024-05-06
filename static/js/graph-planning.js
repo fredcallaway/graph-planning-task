@@ -120,7 +120,7 @@ class CircleGraph {
     return this
   }
 
-  async run(display) {
+  async run(display, opt={}) {
     if (display) this.attach(display)
 
     if (this.options.mode == 'quizLocation') {
@@ -129,7 +129,8 @@ class CircleGraph {
       return await this.quizImageLocation()
     } else {
       this.setCurrentState(this.options.start)
-      await this.showStartScreen()
+      if (!this.options.skip_start) await this.showStartScreen()
+      this.showGraph()
       if (this.options.hover_edges || this.options.hover_states || this.options.two_stage) {
         await this.plan()
       }
@@ -317,6 +318,7 @@ class CircleGraph {
     // this.setupEyeTracking()
 
     $('<p>').html(this.full_description)
+    .addClass('graph-description')
     .css({transform: 'translate(0, -30px)'})
     .appendTo(this.el)
 
@@ -375,8 +377,6 @@ class CircleGraph {
       .appendTo(this.root)
       await getKeyPress(['enter'])
       $('.pressspace').remove()
-      this.showGraph()
-      return
     }
 
     this.graphContainer.css({border: 'thin white solid'}) // WTF why does this fix positioning??
@@ -411,7 +411,6 @@ class CircleGraph {
       await sleep(1000)
       moves.remove()
     }
-    this.showGraph()
   }
 
   describeRewards() {
@@ -507,6 +506,7 @@ class CircleGraph {
     this.hideAllEdges()
     this.el.classList.add('hideEdges')
     this.el.classList.add('hideStates')
+    $('.graph-description').hide()
     $(this.el).removeClass('imagination')
     this.planningPhaseActive = false
     this.hover(this.state)

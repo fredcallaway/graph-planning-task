@@ -116,10 +116,43 @@ class GraphInstructions extends Instructions {
   async stage_practice_revealed() {
     this.setPrompt("Let's try a few practice rounds.")
     for (let trial of this.trials.practice_revealed) {
+      let cg = new CircleGraph({...trial, revealed: true, two_stage: false})
+      await cg.run(this.content)
+    }
+    this.runNext()
+  }
+
+  async stage_practice_two_stage() {
+    this.setPrompt(`
+      One more thing. To encourage you to think ahead, each round has two phases: **planning** and **action**.
+    `)
+    await this.button()
+    this.setPrompt(`
+      In the **planning** phase, you can see the whole board, but you can't move.
+      You exit the planning phase by clicking your starting location (the red circle).
+
+    `)
+    let cg = new CircleGraph({...this.trials.practice_revealed[0], revealed: true, skip_start: true})
+    cg.attach(this.content)
+    cg.showGraph()
+    cg.setCurrentState(cg.options.start)
+    await cg.plan()
+
+    this.setPrompt(`
+      In the **action** phase, all of the images and connections disappear and you can
+      select your moves.
+    `)
+    await cg.navigate()
+
+    this.setPrompt(`
+      Try a few more practice rounds.
+    `)
+    for (let trial of this.trials.practice_revealed.slice(1)) {
       let cg = new CircleGraph({...trial, revealed: true})
       await cg.run(this.content)
     }
     this.runNext()
+    await sleep(1e10)
   }
 
   async stage_hover() {
