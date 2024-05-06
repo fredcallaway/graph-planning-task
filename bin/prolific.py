@@ -48,12 +48,12 @@ class Prolific(object):
                 print("Saved to .project_id - we won't ask again.")
             return project_id
 
-    def _request(self, method, url, **kws):
+    def _request(self, method, url, json=None, **kws):
         if url.startswith('/'):
             url = 'https://api.prolific.co/api/v1' + url
         if not url.endswith('/') and '?' not in url:  # adding / prevents redirecting POST requests
             url += '/'
-        r = requests.request(method, url, **kws, headers={
+        r = requests.request(method, url, **kws, json=json, headers={
             'Authorization': f'Token {self.token}',
         })
         response = r.json()
@@ -154,8 +154,6 @@ class Prolific(object):
                 bonuses = dict(pd.read_csv(file, header=None).set_index(0)[1])
 
         assert isinstance(bonuses, dict)
-
-        self._prolific.assign_bonuses(self._study_id, bonuses)
 
         previous_bonus = {sub['participant_id']: sum(sub['bonus_payments']) / 100
                           for sub in self._submissions(study_id)}
