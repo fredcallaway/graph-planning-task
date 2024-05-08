@@ -4,11 +4,19 @@ const DEFAULT_INSTRUCT_HELP= `
   If you get stuck, try clicking << and then >> to start the section over.
 `
 
+const fmtKey = (key) => `<code>${key.toUpperCase()}</code>`
+
 class GraphInstructions extends Instructions {
   constructor(options={}) {
-    super({...options, promptHeight: 100, width: 800})
+    super({...options, promptHeight: 60, width: 800})
     this.trials = options.trials
     window.instruct = this
+
+    this._continue = $('<p>')
+    .css({textAlign: 'center', fontSize: 14, marginBottom: 40})
+    .html(`press ${fmtKey(KEY_CONTINUE)} to continue`)
+    .appendTo(this.textDiv)
+    .css({opacity: 0})
 
 
     if (!PARAMS.use_process_tracing) {
@@ -25,12 +33,19 @@ class GraphInstructions extends Instructions {
   async stage_welcome() {
     this.setPrompt(`
       Thanks for participating! We'll start with some quick instructions.
-
+      <br>
       _psst: you can use the arrows above to flip through the pages_
     `)
 
-    await this.button()
+
+    await this.continue()
     this.runNext()
+  }
+
+  async continue() {
+    this._continue.css({opacity: 1})
+    await waitForKeypress([KEY_CONTINUE])
+    this._continue.css({opacity: 0})
   }
 
   async stage_intro() {
@@ -40,20 +55,24 @@ class GraphInstructions extends Instructions {
     cg.showGraph()
 
     this.setPrompt(`Welcome! In this experiment, you will play a game on the board shown below.`)
-    await this.button()
+    await this.continue()
 
     this.setPrompt(`Your current location on the board is highlighted in blue.`)
     cg.setCurrentState(trial.start)
-    await this.button()
+    await this.continue()
 
-    this.setPrompt(`Your current location on the board is highlighted in blue.`)
-
-    this.setPrompt(`You can move by clicking on a location that has an arrow pointing<br>from your current location. Try it now!`)
-    let next_states = cg.graph.successors(trial.start)
-    for (const s of next_states) {
-      $(`.GraphNavigation-State-${s}`).addClass('GraphNavigation-State-Highlighted')
+    this.setPrompt(`The arrows indicate where you can move to next.`)
+    for (const s of cg.graph.successors(trial.start)) {
+      cg.highlightEdge(cg.state, s, {leavePrevious: true})
     }
-    await cg.navigate({n_steps: 1, leave_state: true})
+
+    this.setPrompt(`You can select which arrow to follow by pressing ${fmtKey(KEY_SWITCH)}. Try it out`)
+    let nav = cg.navigate({n_steps: 1, leave_state: true})
+    await eventPromise('graph.key.switch')
+
+    this.setPrompt(`Confirm your choice by pressing ${fmtKey(KEY_SELECT)}.`)
+    await nav
+
     $(`.GraphNavigation-State`).removeClass('GraphNavigation-State-Highlighted')
 
     this.setPrompt(`
@@ -91,30 +110,31 @@ class GraphInstructions extends Instructions {
       are worth -1 points.
     `)
     this.content.html(new CircleGraph(this.trials.intro_describe[0]).describeRewards())
-    await this.button()
+    await this.continue()
 
     this.setPrompt(`
       The number of good images and their value changes from round to round.
-      Click to see a few more examples.
     `)
     this.content.html(new CircleGraph(this.trials.intro_describe[1]).describeRewards())
 
     for (let trial of this.trials.intro_describe.slice(2)) {
-      let btn = button(this.prompt, 'next')
-      await btn.promise()
-      btn.remove()
+      await this.continue()
       this.content.empty()
       cg = new CircleGraph(trial);
       cg.describeRewards().appendTo(this.content)
     }
 
 
-    await this.button()
+    await this.continue()
     this.runNext()
   }
 
   async stage_practice_revealed() {
-    this.setPrompt("Let's try a few practice rounds.")
+
+    this.setPrompt(`
+      Let's try a few practice rounds. Press ${fmtKey(KEY_CONTINUE)} to begin the round,
+      then use ${fmtKey(KEY_SWITCH)} and ${fmtKey(KEY_SELECT)} to select a path.`
+    )
     for (let trial of this.trials.practice_revealed) {
       let cg = new CircleGraph({...trial, revealed: true, two_stage: false})
       await cg.run(this.content)
@@ -126,16 +146,17 @@ class GraphInstructions extends Instructions {
     this.setPrompt(`
       One more thing. To encourage you to think ahead, each round has two phases: **planning** and **action**.
     `)
-    await this.button()
+    await this.continue()
     this.setPrompt(`
-      In the **planning** phase, you can see the whole board, but you can't move.
-      You exit the planning phase by clicking your starting location (the red circle).
-
+      In the **planning** phase, you can see the whole board, but you can't move. After making a plan,
+      press ${fmtKey(KEY_SWITCH)} to enter the action phase.
     `)
     let cg = new CircleGraph({...this.trials.practice_revealed[0], revealed: true, skip_start: true})
+    cg.setCurrentState(cg.options.start)
     cg.attach(this.content)
     cg.showGraph()
-    cg.setCurrentState(cg.options.start)
+    // TODO FINISH
+
     await cg.plan()
 
     this.setPrompt(`
@@ -206,7 +227,7 @@ class GraphInstructions extends Instructions {
       _What's in it for me?_ you might be asking. Well, we thought of that!
       Unlike other experiments you might have done, we don't have a fixed number of rounds.
     `)
-    await this.button()
+    await this.continue()
     let goal
     if (PARAMS.time_limit) {
       goal = 'earn the most money'
@@ -216,24 +237,24 @@ class GraphInstructions extends Instructions {
         At the end of the experiment, we will convert those points into a cash bonus:
         **${this.options.bonus.describeScheme()}.**
       `)
-      await this.button()
+      await this.continue()
       this.setPrompt(`
         The ${2*time_limit} minutes will be broken up into two stages of ${time_limit} minutes each.
         We'll tell you more about the second stage later.
       `)
-      await this.button()
+      await this.continue()
     } else {
       goal = 'finish the study as quickly as possible'
       this.setPrompt(`
         Instead, you will do as **as many rounds as it takes** to earn **${PARAMS.score_limit} points.**
       `)
-      await this.button()
+      await this.continue()
     }
     this.setPrompt(`
       To ${goal}, you'll have to balance making fast choices and selecting the
       best possible path.
     `)
-    await this.button()
+    await this.continue()
     this.runNext()
   }
 

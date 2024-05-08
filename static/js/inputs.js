@@ -1,4 +1,16 @@
 
+function waitForKeypress(allowedKeys = []) {
+  return new Promise((resolve, reject) => {
+    function handleKeyPress(event) {
+      if (allowedKeys.length === 0 || allowedKeys.includes(event.key)) {
+        resolve(event.key);
+        document.removeEventListener('keydown', handleKeyPress);
+      }
+    }
+    document.addEventListener('keydown', handleKeyPress);
+  });
+}
+
 // default names; you should probably pass names though
 const _input_counters = {}
 function nextInputName(type) {

@@ -247,7 +247,7 @@ img {
 
 .GraphNavigation.withGraphic.imagination .GraphNavigation-current {
   transition: opacity 0ms ;
-  background-color: #F2384A !important;
+/*  background-color: #F2384A !important;*/
 }
 
 .GraphNavigation.withGraphic .hovered {
@@ -430,11 +430,13 @@ img {
 }
 
 .GraphNavigation-edge.HighlightedEdge {
-    background: black !important;
+    background: #FBB100 !important;
+    z-index: 1;
 }
 
 .GraphNavigation-arrow.HighlightedEdge {
-    color: black !important;
+    color: #FBB100 !important;
+    z-index: 1;
 }
 
 .Peek {

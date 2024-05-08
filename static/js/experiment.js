@@ -181,19 +181,19 @@ async function runExperiment() {
       prompt.hide(); cgDiv.show()
     }
 
-    // await showPrompt(`
-    //   <h1> Stage 2</h1>
+    await showPrompt(`
+      <h1> Stage 2</h1>
 
-    //   Great job! In Stage 1, you earned $${bonus.dollars().toFixed('2')}.
-    //   But don't get too confident—this next stage is going to be tougher!
-    // `)
+      Great job! In Stage 1, you earned $${bonus.dollars().toFixed('2')}.
+      But don't get too confident—this next stage is going to be tougher!
+    `)
 
-    // await showPrompt(`
-    //   <h1> Stage 2</h1>
+    await showPrompt(`
+      <h1> Stage 2</h1>
 
-    //   Specifically, we're not going to show you the images anymore. You'll have
-    //   to remember where the images are located if you want to keep earning points!
-    // `)
+      Specifically, we're not going to show you the images anymore. You'll have
+      to remember where the images are located if you want to keep earning points!
+    `)
 
     await showPrompt(`
       <h1>Memory Check (1/3)</h1>

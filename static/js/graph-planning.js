@@ -5,6 +5,9 @@ let ensureSign = x => x > 0 ? "+" + x : "" + x
 const FAST_MODE = (new URLSearchParams(location.search)).get('fast') == '1'
 
 
+const KEY_SWITCH = 's'
+const KEY_SELECT = 't'
+const KEY_CONTINUE = 'r'
 
 
 class Graph {
@@ -228,7 +231,7 @@ class CircleGraph {
       let i = $('<img>').addClass('quiz-image').prop({width: 80, src})
       return $('<div>').append(i).css({
         display: 'inline-flex',
-        border: '2px white solid',
+        // border: '2px white solid',
         cursor: 'pointer'
       })
     })
@@ -386,7 +389,7 @@ class CircleGraph {
       .css({marginTop: 120})
       .appendTo(this.graphContainer)
       .text(this.options.start_message)
-      await this.centerButton('continue')
+      await waitForKeypress([KEY_CONTINUE])
       msg.remove()
     }
 
@@ -399,7 +402,7 @@ class CircleGraph {
     }
 
     let desc = this.describeRewards().appendTo(this.graphContainer)
-    await this.centerButton()
+    await waitForKeypress([KEY_CONTINUE])
     desc.remove()
 
     await sleep(200)
@@ -479,29 +482,13 @@ class CircleGraph {
   }
 
   async enableExitImagination() {
-
+    await waitForKeypress([KEY_SWITCH])
     let stateDiv = $(`.GraphNavigation-State-${this.state}`)
     let ready = makePromise()
+    this.exitImagination()
+  }
 
-    let label = $('<span>').appendTo(stateDiv)
-    .css({
-      fontSize: 14,
-      color: 'white',
-      transition: 'opacity 100ms',
-      opacity: 0,
-    })
-    .addClass('absolute-centered')
-    .html('ready?')
-
-    stateDiv.on('mouseenter', () => label.css('opacity', 1))
-    .on('mouseleave', () => label.css('opacity', 0))
-    .on('click', async () => {
-      ready.resolve()
-      label.css('opacity', 0)
-      await sleep(100)
-      label.remove()
-    })
-    await ready
+  exitImagination() {
     this.logEvent('graph.imagination.end')
     this.hideAllEdges()
     this.el.classList.add('hideEdges')
@@ -523,6 +510,24 @@ class CircleGraph {
       onlyShowCurrentEdges: this.options.graphRenderOptions.onlyShowCurrentEdges,
       ...options,
     });
+  }
+
+  async keyTransition() {
+    console.log('KEY')
+    let choices = this.graph.successors(this.state)
+    let idx = _.random(choices.length - 1)
+    while (true) {
+      this.highlightEdge(this.state, choices[idx])
+      let key = await waitForKeypress([KEY_SWITCH, KEY_SELECT])
+      if (key == KEY_SWITCH) {
+        this.logEvent('graph.key.switch', {choice: choices[idx]})
+        idx = (idx + 1) % choices.length
+      } else {
+        this.logEvent('graph.key.select', {choice: choices[idx]})
+        break
+      }
+    }
+    return choices[idx]
   }
 
   clickTransition(options) {
@@ -644,11 +649,8 @@ class CircleGraph {
     while (true) { // eslint-disable-line no-constant-condition
       // State transition
       const g = this.graph;
-      const {state} = await this.clickTransition({
-        invalidStates: new Set(
-          g.states.filter(s => !g.successors(this.state).includes(s))
-        ),
-      });
+      const state = await this.keyTransition();
+      console.log('state', state)
       if (this.options.forced_hovers) {
         this.hideAllEdges()
         this.showEdge(this.state, state)
@@ -687,7 +689,7 @@ class CircleGraph {
         // this.setCurrentState(undefined)
         break;
       }
-      await sleep(200);
+      // await sleep(200);
       // await sleep(5)
     }
     return path
@@ -775,9 +777,12 @@ class CircleGraph {
     })
   }
 
-  highlightEdge(s1, s2) {
-    $(this.el).addClass('SomeHighlighted')
-    $(`.GraphNavigation-edge,.GraphNavigation-arrow`).removeClass('HighlightedEdge')
+  highlightEdge(s1, s2, opt={}) {
+    console.log('highlightEdge', s1, s2, opt)
+    if (!opt.leavePrevious) {
+      console.log('REMOVE')
+      $(`.GraphNavigation-edge,.GraphNavigation-arrow`).removeClass('HighlightedEdge')
+    }
     $(`.GraphNavigation-edge-${s1}-${s2}`).addClass('HighlightedEdge')
   }
 
