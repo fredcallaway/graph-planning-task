@@ -421,9 +421,11 @@ class CircleGraph {
     $('<p>').html(this.full_description)
     .css({marginTop: 100})
     .appendTo(div)
-    let imgs = $('<div>').addClass('describe-rewards-box').appendTo(div)
-    for (const t of this.options.targets) {
-      $('<img>').prop('src', this.options.images[t]).prop('width', 80).appendTo(imgs)
+    if (!this.options.hide_states) {
+      let imgs = $('<div>').addClass('describe-rewards-box').appendTo(div)
+      for (const t of this.options.targets) {
+        $('<img>').prop('src', this.options.images[t]).prop('width', 80).appendTo(imgs)
+      }
     }
     return div
   }

@@ -138,7 +138,8 @@ async function runExperiment() {
         start_message = bonus.reportBonus()
         show_locations = hidden
       }
-      let cg = new CircleGraph({...PARAMS, ...trial, start_message, show_locations, hover_edges: PARAMS.use_process_tracing})
+      let cg = new CircleGraph({...PARAMS, ...trial, start_message, show_locations,
+                                hover_edges: PARAMS.use_process_tracing, hide_states: hidden})
 
       await cg.run(workspace)
       timer.pause()
