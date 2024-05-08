@@ -13,7 +13,7 @@ IMAGES = [
     "static/images/Object_Sea_Solid_Large.png",
     "static/images/Object_Sea_Pattern_Large.png",
     "static/images/Object_Land_Solid_Small.png",
-    "static/images/Object_Land_Pattern_Small.png",
+    "static/images/Object_Land_Pattern_Large.png",
 ]
 parse_features(img) = split(rsplit(img, "/")[end], "_")[1:3]
 FEATURES = map(IMAGES) do img
@@ -212,9 +212,6 @@ function make_trials(; perm)
     )
 end
 
-
-mean(random_value.(trial2problem.(make_trials(;perm).main)))
-mean(value.(trial2problem.(make_trials(;perm).main)))
 
 # %% --------
 
