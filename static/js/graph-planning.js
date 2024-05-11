@@ -4,10 +4,15 @@ let ensureSign = x => x > 0 ? "+" + x : "" + x
 
 const FAST_MODE = (new URLSearchParams(location.search)).get('fast') == '1'
 
+let KEY_CONTINUE = 'l'
+let KEY_SWITCH = 'k'
+let KEY_SELECT = 'j'
 
-const KEY_SWITCH = 's'
-const KEY_SELECT = 't'
-const KEY_CONTINUE = 'r'
+if (urlParams.fred) {
+   KEY_CONTINUE = 'r'
+   KEY_SWITCH = 's'
+   KEY_SELECT = 't'
+}
 
 function describeReward(value, description) {
   let cls = value > 0 ? 'win' : 'loss'
