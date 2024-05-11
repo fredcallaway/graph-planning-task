@@ -52,7 +52,7 @@ async function runExperiment() {
     width: 800,
     height: 600,
     scaleEdgeFactor: 1,
-    fixedXY: circleXY(config.trials.main[0].graph.length)
+    fixedXY: circleXY(config.trials.main_revealed[0].graph.length)
   };
   updateExisting(PARAMS, urlParams)
   psiturk.recordUnstructuredData('PARAMS', PARAMS);

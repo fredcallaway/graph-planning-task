@@ -56,6 +56,15 @@ img {
   }
 }
 
+.subtle-desc span {
+  color: black !important;
+  font-weight: 400;
+  font-size: 16pt;
+}
+.points {
+  font-size: 20pt ;
+}
+
 .pop {
   font-weight: bold;
   animation-fill-mode: forwards;
@@ -104,11 +113,11 @@ img {
 
 .loss {
   color: #9E0002;
-  font-weight: 500;
+  font-weight: 600;
 }
 .win {
   color: #0F7003;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 

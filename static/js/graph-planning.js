@@ -9,6 +9,12 @@ const KEY_SWITCH = 's'
 const KEY_SELECT = 't'
 const KEY_CONTINUE = 'r'
 
+function describeReward(value, description) {
+  let cls = value > 0 ? 'win' : 'loss'
+  return `<span class='${cls} points'>${ensureSign(value)}</span>
+  for <span class='${cls}'>${description}</span>`
+}
+
 
 class Graph {
   constructor(adjacency) {
@@ -72,13 +78,6 @@ class CircleGraph {
       position: 'relative',
       textAlign: 'center',
     })
-
-    if (this.options.description) {
-      this.full_description = `
-        <b>${numString(this.options.value, 'point')}</b>
-        for items matching: <b>${this.options.description}</b>
-      `
-    }
 
     this.rewards = _.clone(options.rewards ?? Array(options.images.length+1).fill(0))
     this.onStateVisit = options.onStateVisit ?? ((s) => {})
@@ -320,10 +319,17 @@ class CircleGraph {
     this.logEvent('graph.showGraph')
     // this.setupEyeTracking()
 
-    $('<p>').html(this.full_description)
-    .addClass('graph-description')
-    .css({transform: 'translate(0, -30px)'})
-    .appendTo(this.el)
+    if (this.options.reward_info) {
+      $('<p>')
+      .addClass('subtle-desc')
+      .html(
+        this.options.reward_info.map(info => describeReward(info.val, info.desc)).join('; ')
+      )
+      .addClass('graph-description')
+      .css({transform: 'translate(0, -30px)'})
+      .appendTo(this.el)
+
+    }
 
     if (this.options.hide_states || this.options.hover_rewards) this.el.classList.add('hideStates');
     if (this.options.hide_edges || this.options.hover_edges) this.el.classList.add('hideEdges');
@@ -417,14 +423,19 @@ class CircleGraph {
   }
 
   describeRewards() {
-    let div = $('<div>').addClass('describe-rewards')
-    $('<p>').html(this.full_description)
-    .css({marginTop: 100})
-    .appendTo(div)
-    if (!this.options.hide_states) {
-      let imgs = $('<div>').addClass('describe-rewards-box').appendTo(div)
-      for (const t of this.options.targets) {
-        $('<img>').prop('src', this.options.images[t]).prop('width', 80).appendTo(imgs)
+    let div = $('<div>').addClass('describe-rewards').css({marginTop: 80})
+
+    for (let info of this.options.reward_info) {
+      console.log('info', info)
+      $('<p>').html(describeReward(info.val, info.desc))
+      .css({marginTop: 20})
+      .appendTo(div)
+
+      if (!this.options.hide_states) {
+        let imgs = $('<div>').addClass('describe-rewards-box').appendTo(div)
+        for (const t of info.targets) {
+          $('<img>').prop('src', this.options.images[t]).prop('width', 80).appendTo(imgs)
+        }
       }
     }
     return div

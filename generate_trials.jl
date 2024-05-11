@@ -141,21 +141,49 @@ function Random.rand(rng::AbstractRNG, s::Random.SamplerTrivial{<:IIDSampler})
     rand(x, n)
 end
 
-function sample_trial(perm; n_feature=rand(1:3), value=rand(1:3), revealed=true, kws...)
+function sample_trial(perm; n_good=rand(1:3), n_bad=rand(1:3), v_good=rand(1:3), v_bad=rand(-3:-1), revealed=true, kws...)
     graph, start = sample_graph(length(perm)+1)
     for es in graph
         es .-= 1
     end
     start -= 1
-    mask = Union{Missing,Bool}[missing, missing, missing]
-    chosen = sample(1:3, n_feature; replace=false)
-    mask[chosen] .= rand((true, false))
-    targets = map(FEATURES[perm]) do f
-        all(skipmissing(f .== mask))
+
+    good_mask = Union{Missing,Bool}[missing, missing, missing]
+    good_dims = sample(1:3, n_good; replace=false)
+    focal = good_dims[1]
+    for i in good_dims
+        good_mask[i] = rand((true, false))
     end
-    rewards = [1; (value+1) .* targets] .- 1
-    (;start, graph, rewards, value, revealed,
-      targets = findall(targets) .- 1, description=describe_mask(mask), kws...)
+
+    bad_mask = Union{Missing,Bool}[missing, missing, missing]
+    bad_mask[focal] = !good_mask[focal]
+    if n_bad > 1
+        bad_dims = sample(setdiff(1:3, focal), n_bad-1; replace=false)
+        for i in bad_dims
+            bad_mask[i] = rand((true, false))
+        end
+    end
+
+    good = map(FEATURES[perm]) do f
+        all(skipmissing(f .== good_mask))
+    end
+
+    bad = map(FEATURES[perm]) do f
+        all(skipmissing(f .== bad_mask))
+    end
+
+    @assert !any(bad .& good)
+
+
+    rewards = [0; @. good * v_good + bad * v_bad]
+    (;
+        start, graph, rewards, revealed,
+        reward_info = (
+            (;val=v_good, desc=describe_mask(good_mask), targets=findall(good)),
+            (;val=v_bad, desc=describe_mask(bad_mask), targets=findall(bad))
+        ),
+        kws...
+    )
 end
 
 function trial2problem(t)
@@ -203,7 +231,6 @@ function make_trials(; perm)
         ],
         practice_revealed = [sample_trial(perm) for i in 1:3],
         practice_twostage = [sample_trial(perm) for i in 1:3],
-        main = [sample_trial(perm) for i in 1:30],
         intro_hover = [sample_trial(perm)],
         main_revealed = [sample_trial(perm) for i in 1:200],
         main_hidden = [sample_trial(perm) for i in 1:200],
