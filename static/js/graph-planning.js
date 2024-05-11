@@ -265,7 +265,6 @@ class CircleGraph {
       }))
       let timeout = sleep(this.options.timeLimit ?? 1e10)
       let response = await Promise.any([clicked, timeout])
-      console.log("YO")
       this.unhighlight(target)
 
       // feedback
@@ -426,7 +425,6 @@ class CircleGraph {
     let div = $('<div>').addClass('describe-rewards').css({marginTop: 80})
 
     for (let info of this.options.reward_info) {
-      console.log('info', info)
       $('<p>').html(describeReward(info.val, info.desc))
       .css({marginTop: 20})
       .appendTo(div)
@@ -526,7 +524,6 @@ class CircleGraph {
   }
 
   async keyTransition() {
-    console.log('KEY')
     let choices = this.graph.successors(this.state)
     let idx = _.random(choices.length - 1)
     while (true) {
@@ -619,15 +616,22 @@ class CircleGraph {
 
     this.setCurrentState(state);
     if (!initial) {
-      this.hover(state)
+      this.hideAllEdges()
+      this.showState(state)
       this.addPoints(this.rewards[state], state)
+      $(`.GraphNavigation-State-${state} > .GraphReward`).addClass('floatup')
+      await sleep(700)
+      // $(`.GraphNavigation-State-${state} img`).css({transition: 'opacity 300ms'})
+      $(`.GraphNavigation-State-${state} img`).animate({opacity: 0}, 300)
+      await sleep(300)
+
+      this.hover(state)  // why is this necessary?
+
       if (this.options.consume) {
         this.rewards[state] = 0
         $(`.GraphNavigation-State-${state}`).addClass('consumed')
         // let cls = (points < 0) ? "loss" : "win"
         // let sign = (points < 0) ? "" : "+"
-        await sleep(200)
-        $(`.GraphNavigation-State-${state} > .GraphReward`).addClass('floatup')
         // $(`.GraphNavigation-State-${state} > .GraphReward`).remove()
       }
     }
@@ -663,7 +667,6 @@ class CircleGraph {
       // State transition
       const g = this.graph;
       const state = await this.keyTransition();
-      console.log('state', state)
       if (this.options.forced_hovers) {
         this.hideAllEdges()
         this.showEdge(this.state, state)
@@ -764,7 +767,6 @@ class CircleGraph {
   clickStatePromise(state, timeLimit=null) {
     return new Promise((resolve, reject) => {
       if (timeLimit) {
-        console.log('timeLimit', timeLimit)
         sleep(timeLimit).then(()=>resolve('timeout'))
       }
       if (state == undefined) {
@@ -791,9 +793,7 @@ class CircleGraph {
   }
 
   highlightEdge(s1, s2, opt={}) {
-    console.log('highlightEdge', s1, s2, opt)
     if (!opt.leavePrevious) {
-      console.log('REMOVE')
       $(`.GraphNavigation-edge,.GraphNavigation-arrow`).removeClass('HighlightedEdge')
     }
     $(`.GraphNavigation-edge-${s1}-${s2}`).addClass('HighlightedEdge')
@@ -939,7 +939,6 @@ function graphXY(graph, width, height, scaleEdgeFactor, fixedXY) {
   // Now we compute our coordinates.
   const coordinate = {};
   const scaled = {};
-  console.log('graph.states', graph.states)
   for (const state of graph.states) {
     let [x, y] = fixedXY[state];
     // We subtract the min, rescale, and offset appropriately.

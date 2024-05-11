@@ -353,10 +353,10 @@ img {
   width: 5.5rem;
 }
 
-.State.GraphNavigation-current img {
+/*.State.GraphNavigation-current img {
   display: none;
 }
-
+*/
 .State.consumed img {
   display: none;
 }

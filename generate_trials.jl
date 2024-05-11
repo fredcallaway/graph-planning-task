@@ -179,8 +179,8 @@ function sample_trial(perm; n_good=rand(1:3), n_bad=rand(1:3), v_good=rand(1:3),
     (;
         start, graph, rewards, revealed,
         reward_info = (
-            (;val=v_good, desc=describe_mask(good_mask), targets=findall(good)),
-            (;val=v_bad, desc=describe_mask(bad_mask), targets=findall(bad))
+            (;val=v_good, desc=describe_mask(good_mask), targets=findall(good) .- 1),
+            (;val=v_bad, desc=describe_mask(bad_mask), targets=findall(bad) .- 1)
         ),
         kws...
     )
