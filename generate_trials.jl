@@ -20,6 +20,10 @@ parse_features(img) = split(rsplit(img, "/")[end], "_")[1:3]
 CATEGORIES = [1,1,1,2,2,2,3,3,3]
 CATEGORY_NAMES = ["Animal", "Object", "Food"]
 
+using Distributions
+D_GOOD = DiscreteNonParametric([1,2,4], [2/5, 2/5, 1/5])
+D_BAD = DiscreteNonParametric([-1,-2,-4], [1/3, 1/3, 1/3])
+
 function describe_mask(mask)
     lookup = [
         Dict(true => "Animal", false => "Object"),
@@ -96,6 +100,7 @@ function sample_graph(n; start=1)
     base = random_tree(div(n, 2))
     perm = randperm(length(base))
     # perm[i] = j means node j goes to position i
+    i = findfirst(isequal(1), perm)
     perm[start], perm[i] = 1, perm[start]
     graph = map(base[perm]) do x
         Int[findfirst(isequal(i), perm) for i in x]
@@ -138,7 +143,7 @@ function Random.rand(rng::AbstractRNG, s::Random.SamplerTrivial{<:IIDSampler})
     rand(x, n)
 end
 
-function sample_trial(perm; v_good=rand(1:3), v_bad=rand(-3:-1), revealed=true, kws...)
+function sample_trial(perm; v_good=rand(D_GOOD), v_bad=rand(D_BAD), revealed=true, kws...)
     c_good, c_bad, c_zero = shuffle(1:3)
 
     good = findall(isequal(c_good), CATEGORIES[perm])
@@ -174,26 +179,27 @@ function trial2problem(t)
 end
 
 function intro_trial(perm; reward, kws...)
-    t = sample_trial(perm)
-    while true
+    for i in 1:10000
+        t = sample_trial(perm; kws...)
         prob = trial2problem(t)
-        if minimum(length, paths(prob)) ≥ 2
-            break
+        minimum(length, paths(prob)) == 2 || continue
+        if reward == :posneg
+            cat1 = CATEGORIES[perm][prob.graph[prob.start]]
+            length(unique(cat1)) == 1 || continue
+            is_cat1 = CATEGORIES[perm] .== cat1[1]
+            t.rewards .= -1
+            t.rewards[is_cat1] .= 2
+            all(paths(prob)) do pth
+                any(pth) do s
+                    t.rewards[s] < 0
+                end
+            end || continue
+            return t
         else
-            t = sample_trial(perm)
+            return t
         end
     end
-    rewards = zeros(Int, length(perm)+1)
-    if reward == :posneg
-        rewards .= -1
-        for s in t.graph[1]
-            rewards[s+1] = 2
-            # for s2 in t.graph[s+1]
-            #     rewards[s+1] = -1
-            # end
-        end
-    end
-    (;t..., rewards, revealed=true, kws...)
+    error("couldn't sample intro_trial")
 end
 
 
@@ -205,9 +211,9 @@ function make_trials(; perm)
             intro_trial(perm; reward=:posneg),
         ],
         intro_describe = [
-            sample_trial(perm; n_feature=1, value=2),
-            sample_trial(perm; n_feature=2, value=1),
-            sample_trial(perm; n_feature=3, value=3),
+            sample_trial(perm),
+            sample_trial(perm),
+            sample_trial(perm),
         ],
         practice_revealed = [sample_trial(perm) for i in 1:3],
         practice_twostage = [sample_trial(perm) for i in 1:3],
@@ -220,6 +226,15 @@ function make_trials(; perm)
 end
 
 
+# %% --------
+
+mean(make_trials(;perm=1:9).main_revealed) do t
+    prob = trial2problem(t)
+    # mean(paths(prob)) do pth
+    #     value(prob, pth)
+    # end
+    value(prob)
+end
 # %% --------
 
 version = "v23"

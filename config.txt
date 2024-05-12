@@ -13,7 +13,7 @@ table_name = participants
 name = Puzzle Game
 reward = 600
 external_study_url = https://graph-planning-634e23467632.herokuapp.com/consent?mode=live&hitId=prolific&workerId={{%%PROLIFIC_PID%%}}&STUDY_ID={{%%STUDY_ID%%}}&assignmentId={{%%SESSION_ID%%}}
-total_available_places = 8
+total_available_places = 2
 estimated_completion_time = 40
 description =
     In this study, you will solve a series of puzzles. Based on your performance,

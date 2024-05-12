@@ -176,11 +176,11 @@ class CircleGraph {
     await showAll()
     let done = false
     // query states one by one
-    let todo = _.shuffle(_.range(1, N))
+    let todo = _.shuffle(_.range(0, N))
     while (todo.length) {
       let target = todo.pop()
       img.show()
-      img.prop({src: images[target-1]})
+      img.prop({src: images[target]})
       logEvent('graph.quiz.image.prompt', {target})
 
       let clicked = await this.clickStatePromise(undefined, this.options.timeLimit)
@@ -212,7 +212,7 @@ class CircleGraph {
       // reset on error
       if (clicked != target) {
         await showAll()
-        todo = _.shuffle(_.range(1, N))
+        todo = _.shuffle(_.range(0, N))
       }
     }
   }
@@ -229,6 +229,7 @@ class CircleGraph {
     .addClass('absolute-centered')
     .css({width: 250})
     .appendTo(this.root)
+
 
     let imgDivs = images.map(src => {
       // for some reason we have to wrap the image in a div for click to work???
@@ -255,7 +256,7 @@ class CircleGraph {
     await showAll()
     let done = false
     // query states one by one
-    let todo = _.shuffle(_.range(1, N))
+    let todo = _.shuffle(_.range(0, N))
     while (todo.length) {
       let target = todo.pop()
       await sleep(500)
@@ -264,7 +265,7 @@ class CircleGraph {
       let clicked = Promise.any(imgDivs.entries().map(([i, img]) => {
         return new Promise((resolve, reject) => {
           img.click(() => {
-            resolve(i + 1)
+            resolve(i)
           })
         })
       }))
@@ -338,6 +339,7 @@ class CircleGraph {
     if (this.options.hide_states || this.options.hover_rewards) this.el.classList.add('hideStates');
     if (this.options.hide_edges || this.options.hover_edges) this.el.classList.add('hideEdges');
     $(`.ShadowState .GraphReward`).remove()
+    $(`.ShadowState img`).remove()
     if (!this.options.show_steps) {
       $("#gn-steps").hide()
     }

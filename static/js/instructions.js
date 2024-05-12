@@ -105,16 +105,12 @@ class GraphInstructions extends Instructions {
 
   async stage_reward_description() {
     this.setPrompt(`
-      The value of the images changes on each round. Before the round,
-      we will tell you which images are good. All the other images
-      are worth -1 points.
+      One each round, some images will be good and some will be bad. If an image isn't mentioned,
+      then it's worth zero points. See a few examples below....
     `)
     this.content.html(new CircleGraph(this.trials.intro_describe[0]).describeRewards())
     await this.continue()
 
-    this.setPrompt(`
-      The number of good images and their value changes from round to round.
-    `)
     this.content.html(new CircleGraph(this.trials.intro_describe[1]).describeRewards())
 
     for (let trial of this.trials.intro_describe.slice(2)) {

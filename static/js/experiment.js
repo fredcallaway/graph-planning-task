@@ -202,8 +202,9 @@ async function runExperiment() {
       When an image appears, click its location on the board. You can continue to the
       next round when you get every image correct without making any mistakes.
     `)
+    prompt.hide()
     logEvent(`experiment.learn.1A`)
-    await new CircleGraph({...PARAMS, start: 0, mode: 'quizImage'}).run(cgDiv)
+    await new CircleGraph({...PARAMS, mode: 'quizImage'}).run(cgDiv)
 
     await showPrompt(`
       <h1>Memory Check (1/3)</h1>
@@ -211,7 +212,7 @@ async function runExperiment() {
       click on the image that lives there.
     `)
     logEvent(`experiment.learn.1B`)
-    await new CircleGraph({...PARAMS, start: 0, mode: 'quizLocation'}).run(cgDiv)
+    await new CircleGraph({...PARAMS, mode: 'quizLocation'}).run(cgDiv)
 
 
     await showPrompt(`
@@ -221,14 +222,14 @@ async function runExperiment() {
       If you're too slow, it will count as a mistake.
     `)
     logEvent(`experiment.learn.2A`)
-    await new CircleGraph({...PARAMS, start: 0, mode: 'quizImage', timeLimit: 3000}).run(cgDiv)
+    await new CircleGraph({...PARAMS, mode: 'quizImage', timeLimit: 3000}).run(cgDiv)
 
     await showPrompt(`
       <h1>Memory Check (2/3)</h1>
       Great! Let's try the reverse version with the time limit.
     `)
     logEvent(`experiment.learn.2B`)
-    await new CircleGraph({...PARAMS, start: 0, mode: 'quizLocation', timeLimit: 3000}).run(cgDiv)
+    await new CircleGraph({...PARAMS, mode: 'quizLocation', timeLimit: 3000}).run(cgDiv)
 
 
     await showPrompt(`
@@ -237,7 +238,7 @@ async function runExperiment() {
     `)
 
     logEvent(`experiment.learn.3A`)
-    await new CircleGraph({...PARAMS, start: 0, mode: 'quizImage', timeLimit: 2000}).run(cgDiv)
+    await new CircleGraph({...PARAMS, mode: 'quizImage', timeLimit: 2000}).run(cgDiv)
 
     await showPrompt(`
       <h1>Memory Check (3/3)</h1>
@@ -245,7 +246,7 @@ async function runExperiment() {
     `)
 
     logEvent(`experiment.learn.3A`)
-    await new CircleGraph({...PARAMS, start: 0, mode: 'quizLocation', timeLimit: 2000}).run(cgDiv)
+    await new CircleGraph({...PARAMS, mode: 'quizLocation', timeLimit: 2000}).run(cgDiv)
 
     await showPrompt(`
       <h1>Stage 2</h1>
@@ -320,7 +321,7 @@ async function runExperiment() {
     mainRevealed,
     learnLocations,
     mainHidden,
-    motivation,
+    // motivation,
     // survey,
     debrief
   )
