@@ -6,19 +6,19 @@ include("$model_dir/problem.jl")
 include("$model_dir/utils.jl")
 
 IMAGES = [
-    "static/images/Animal_Sea_Solid_Small.png",
-    "static/images/Animal_Sea_Pattern_Small.png",
-    "static/images/Animal_Land_Solid_Large.png",
-    "static/images/Animal_Land_Pattern_Small.png",
-    "static/images/Object_Sea_Solid_Large.png",
-    "static/images/Object_Sea_Pattern_Large.png",
-    "static/images/Object_Land_Solid_Small.png",
-    "static/images/Object_Land_Pattern_Large.png",
+    "static/images/Animal1.png"
+    "static/images/Animal2.png"
+    "static/images/Animal3.png"
+    "static/images/Object1.png"
+    "static/images/Object2.png"
+    "static/images/Object3.png"
+    "static/images/Food1.png"
+    "static/images/Food2.png"
+    "static/images/Food3.png"
 ]
 parse_features(img) = split(rsplit(img, "/")[end], "_")[1:3]
-FEATURES = map(IMAGES) do img
-    parse_features(IMAGES[1]) .== parse_features(img)
-end
+CATEGORIES = [1,1,1,2,2,2,3,3,3]
+CATEGORY_NAMES = ["Animal", "Object", "Food"]
 
 function describe_mask(mask)
     lookup = [
@@ -90,20 +90,17 @@ function random_tree(splits)
     tree_join(random_tree(left), random_tree(right))
 end
 
-function sample_graph(n)
+function sample_graph(n; start=1)
     @assert !iseven(n)
     # base = [[2, 3], [4, 5], [6, 7], [], [], [], []]
     base = random_tree(div(n, 2))
     perm = randperm(length(base))
-
-    i = findfirst(isequal(1), perm)
-    perm[1], perm[i] = 1, perm[1]
-
+    # perm[i] = j means node j goes to position i
+    perm[start], perm[i] = 1, perm[start]
     graph = map(base[perm]) do x
         Int[findfirst(isequal(i), perm) for i in x]
     end
-    start = findfirst(isequal(1), perm)
-    graph, start
+    graph
 end
 
 function linear_rewards(n)
@@ -141,46 +138,29 @@ function Random.rand(rng::AbstractRNG, s::Random.SamplerTrivial{<:IIDSampler})
     rand(x, n)
 end
 
-function sample_trial(perm; n_good=rand(1:3), n_bad=rand(1:3), v_good=rand(1:3), v_bad=rand(-3:-1), revealed=true, kws...)
-    graph, start = sample_graph(length(perm)+1)
+function sample_trial(perm; v_good=rand(1:3), v_bad=rand(-3:-1), revealed=true, kws...)
+    c_good, c_bad, c_zero = shuffle(1:3)
+
+    good = findall(isequal(c_good), CATEGORIES[perm])
+    bad = findall(isequal(c_bad), CATEGORIES[perm])
+
+    rewards = zeros(Int, length(perm))
+    rewards[good] .= v_good
+    rewards[bad] .= v_bad
+
+    start = rand(findall(isequal(c_zero), CATEGORIES[perm]))
+    rewards[start] = 0
+
+    graph = sample_graph(length(perm); start)
     for es in graph
         es .-= 1
     end
-    start -= 1
-
-    good_mask = Union{Missing,Bool}[missing, missing, missing]
-    good_dims = sample(1:3, n_good; replace=false)
-    focal = good_dims[1]
-    for i in good_dims
-        good_mask[i] = rand((true, false))
-    end
-
-    bad_mask = Union{Missing,Bool}[missing, missing, missing]
-    bad_mask[focal] = !good_mask[focal]
-    if n_bad > 1
-        bad_dims = sample(setdiff(1:3, focal), n_bad-1; replace=false)
-        for i in bad_dims
-            bad_mask[i] = rand((true, false))
-        end
-    end
-
-    good = map(FEATURES[perm]) do f
-        all(skipmissing(f .== good_mask))
-    end
-
-    bad = map(FEATURES[perm]) do f
-        all(skipmissing(f .== bad_mask))
-    end
-
-    @assert !any(bad .& good)
-
-
-    rewards = [0; @. good * v_good + bad * v_bad]
+    graph
     (;
-        start, graph, rewards, revealed,
+        start = start-1, graph, rewards, revealed,
         reward_info = (
-            (;val=v_good, desc=describe_mask(good_mask), targets=findall(good) .- 1),
-            (;val=v_bad, desc=describe_mask(bad_mask), targets=findall(bad) .- 1)
+            (;val=v_good, desc=CATEGORY_NAMES[c_good], targets=good .- 1),
+            (;val=v_bad, desc=CATEGORY_NAMES[c_bad], targets=bad .- 1)
         ),
         kws...
     )
@@ -247,12 +227,12 @@ Random.seed!(hash(version))
 # %% --------
 
 dest = "static/json/config"
-rm(dest, recursive=true)
+# rm(dest, recursive=true)
 mkpath(dest)
 for i in 1:30
-    n = length(IMAGES) + 1
-    perm = randperm(n-1)
+    perm = randperm(length(IMAGES))
     trials = make_trials(;perm)
+    trials.main_revealed[1].rewards
     parameters = (;
         images = IMAGES[perm],
     )

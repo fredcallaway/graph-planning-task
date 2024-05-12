@@ -84,14 +84,14 @@ class CircleGraph {
       textAlign: 'center',
     })
 
-    this.rewards = _.clone(options.rewards ?? Array(options.images.length+1).fill(0))
+    this.rewards = _.clone(options.rewards ?? Array(options.images.length).fill(0))
     this.onStateVisit = options.onStateVisit ?? ((s) => {})
     this.score = options.score ?? 0
 
     // options.reward_graphics[0] = options.reward_graphics[0] ?? ""
     // options.graphics = this.rewards.map(x => options.reward_graphics[x])
 
-    this.graph = new Graph(options.graph ?? Array(options.images.length+1).fill([]))
+    this.graph = new Graph(options.graph ?? Array(options.images.length).fill([]))
     this.el = renderCircleGraph(
       this.graph, options.goal,
       {
@@ -155,7 +155,7 @@ class CircleGraph {
     logEvent('graph.quiz.image.start.')
     this.el.classList.add('hideStates')
     let images = this.options.images
-    let N = images.length + 1
+    let N = images.length
     this.options.graph = Array(N).fill([])
     // this.setCurrentState(this.options.start)
     this.showGraph()
@@ -221,7 +221,7 @@ class CircleGraph {
     logEvent('graph.quiz.location.start')
     this.el.classList.add('hideStates')
     let images = this.options.images
-    let N = images.length + 1
+    let N = images.length
     this.options.graph = Array(N).fill([])
     this.showGraph()
 
@@ -1011,7 +1011,7 @@ function renderCircleGraph(graph, goal, options) {
   const states = graph.states.map(state => {
     const [x, y] = xy.coordinate[state];
     return stateTemplate(state, {
-      image: options.stateGraphics[state-1],
+      image: options.stateGraphics[state],
       probe: state == options.probe,
       goal: state == goal,
       style: `transform: translate(${x - BLOCK_SIZE/2}px,${y - BLOCK_SIZE/2}px);`,
