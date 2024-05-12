@@ -625,7 +625,7 @@ class CircleGraph {
       this.showState(state)
       this.addPoints(this.rewards[state], state)
       $(`.GraphNavigation-State-${state} > .GraphReward`).addClass('floatup')
-      await sleep(700)
+      await sleep(400)
       // $(`.GraphNavigation-State-${state} img`).css({transition: 'opacity 300ms'})
       $(`.GraphNavigation-State-${state} img`).animate({opacity: 0}, 300)
       await sleep(300)
