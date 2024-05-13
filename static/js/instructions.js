@@ -67,8 +67,10 @@ class GraphInstructions extends Instructions {
     }
 
     this.setPrompt(`You can select which arrow to follow by pressing ${fmtKey(KEY_SWITCH)}. Try it out`)
+    cg.disableSelect = true
     let nav = cg.navigate({n_steps: 1, leave_state: true})
     await eventPromise('graph.key.switch')
+    cg.disableSelect = false
 
     this.setPrompt(`Confirm your choice by pressing ${fmtKey(KEY_SELECT)}.`)
     await nav

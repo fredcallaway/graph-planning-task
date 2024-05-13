@@ -196,6 +196,7 @@ function intro_trial(perm; reward, kws...)
             end || continue
             return t
         else
+            t.rewards .= 0
             return t
         end
     end

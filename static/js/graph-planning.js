@@ -540,8 +540,10 @@ class CircleGraph {
         this.logEvent('graph.key.switch', {choice: choices[idx]})
         idx = (idx + 1) % choices.length
       } else {
-        this.logEvent('graph.key.select', {choice: choices[idx]})
-        break
+        if (!this.disableSelect) {
+          this.logEvent('graph.key.select', {choice: choices[idx]})
+          break
+        }
       }
     }
     return choices[idx]
