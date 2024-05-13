@@ -187,7 +187,9 @@ async function showCompletionScreen() {
 function handleError(e) {
   let msg = e.stack?.length > 10 ? e.stack : `${e}`;
   const workerIdMessage = typeof workerId !== "undefined" && workerId !== null ? workerId : 'N/A';
-  logEvent('experiment.error', {msg})
+  logEvent('experiment.error', {
+    name: error.name, message: error.message, stack: error.stack,
+  })
   const message = `Prolific Id: ${workerIdMessage}\n${msg}`;
   const link = `<a href="mailto:${ERROR_EMAIL}?subject=ERROR in experiment&body=${encodeURIComponent(message)}">Click here</a> to report the error by email.`;
 

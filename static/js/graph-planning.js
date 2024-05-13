@@ -262,7 +262,7 @@ class CircleGraph {
       await sleep(500)
       logEvent('graph.quiz.location.prompt', {target})
       this.highlight(target)
-      let clicked = Promise.any(imgDivs.entries().map(([i, img]) => {
+      let clicked = Promise.any(Array.from(imgDivs.entries()).map(([i, img]) => {
         return new Promise((resolve, reject) => {
           img.click(() => {
             resolve(i)
