@@ -1,5 +1,5 @@
 [Task Parameters]
-experiment_code_version = v25
+experiment_code_version = v26
 # this number determines how many values the CONDITION variable can take
 num_conds = 30
 # don't change this
@@ -17,7 +17,7 @@ total_available_places = 2
 estimated_completion_time = 40
 description =
     In this study, you will solve a series of puzzles. Based on your performance,
-    you can earn a bonus of up to $6.
+    you can earn a bonus of up to $4.
 
 
 [Server Parameters]
