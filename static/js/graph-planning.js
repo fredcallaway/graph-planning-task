@@ -76,7 +76,7 @@ class CircleGraph {
     })
     window.cg = this
     // successorKeys:  options.graphRenderOptions.successorKeys
-    this.trialId = crypto.randomUUID()
+    this.trialId = randomUUID()
     this.logEvent('graph.construct', this.options)
     this.root = $("<div>")
     .css({

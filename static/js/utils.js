@@ -1,3 +1,6 @@
+function randomUUID() {
+  return Date.now() + Math.random().toString(36).substring(2)
+}
 
 // makeGlobal({myObject}) -> myObject in debug console
 function makeGlobal(obj) {
