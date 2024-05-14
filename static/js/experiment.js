@@ -9,7 +9,7 @@ async function runExperiment() {
   // stimuli = await $.getJSON(`static/json/${CONDITION}.json`)
 
   // load configuration and set up parameters
-  const config = await $.getJSON(`static/json/config/${CONDITION+1}.json`)
+  const config = await $.getJSON(`static/json/config/${CONDITION}.json`)
   window.config = config
   PARAMS = _.defaults(config.parameters, {
     two_stage: true,

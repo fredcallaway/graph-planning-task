@@ -180,7 +180,7 @@ class CircleGraph {
     while (todo.length) {
       let target = todo.pop()
       img.show()
-      img.prop({src: images[target]})
+      img.prop({src: 'static/images/' + images[target]})
       logEvent('graph.quiz.image.prompt', {target})
 
       let clicked = await this.clickStatePromise(undefined, this.options.timeLimit)
@@ -439,7 +439,7 @@ class CircleGraph {
       if (!this.options.hide_states) {
         let imgs = $('<div>').addClass('describe-rewards-box').appendTo(div)
         for (const t of info.targets) {
-          $('<img>').prop('src', this.options.images[t]).prop('width', 80).appendTo(imgs)
+          $('<img>').prop('src', 'static/images/' + this.options.images[t]).prop('width', 80).appendTo(imgs)
         }
       }
     }
@@ -898,7 +898,7 @@ const stateTemplate = (state, options) => {
   }
   return `
   <div class="State GraphNavigation-State ${cls || ''}" style="${options.style || ''}" data-state="${state}">
-    <img src="${options.image}" />
+    <img src="static/images/${options.image}" />
   </div>
   `;
     // <img src="${graphicsUrl(graphic)}" dragggable=false/>
