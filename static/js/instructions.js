@@ -102,6 +102,11 @@ class GraphInstructions extends Instructions {
       cost you points though...
     `)
     await cg.navigate()
+    this.setPrompt(`
+      In the main experiment, those points will be converted to a bonus payment:
+      **${this.options.bonus.describeScheme()}.**
+    `)
+    await this.continue()
     this.runNext()
   }
 
@@ -110,27 +115,26 @@ class GraphInstructions extends Instructions {
       One each round, some images will be good and some will be bad. If an image isn't mentioned,
       then it's worth zero points. See a few examples below....
     `)
-    this.content.html(new CircleGraph(this.trials.intro_describe[0]).describeRewards())
-    await this.continue()
+    let div = $('<div>')
+    .css({height: 300, position: 'relative'})
+    .appendTo(this.content)
+    div.html(new CircleGraph(this.trials.intro_describe[0]).describeRewards())
 
-    this.content.html(new CircleGraph(this.trials.intro_describe[1]).describeRewards())
-
-    for (let trial of this.trials.intro_describe.slice(2)) {
-      await this.continue()
-      this.content.empty()
+    for (let trial of this.trials.intro_describe) {
+      div.empty()
       cg = new CircleGraph(trial);
-      cg.describeRewards().appendTo(this.content)
+      cg.describeRewards().appendTo(div)
+      await this.continue()
     }
-
-
-    await this.continue()
     this.runNext()
   }
 
   async stage_practice_revealed() {
 
     this.setPrompt(`
-      Let's try a few practice rounds. Press ${fmtKey(KEY_CONTINUE)} to begin the round,
+      Let's try a few practice rounds.
+      Look at the cross, then press ${fmtKey(KEY_CONTINUE)} to begin the round.
+      Press ${fmtKey(KEY_CONTINUE)} again to show the board,
       then use ${fmtKey(KEY_SWITCH)} and ${fmtKey(KEY_SELECT)} to select a path.`
     )
     for (let trial of this.trials.practice_revealed) {
@@ -221,38 +225,25 @@ class GraphInstructions extends Instructions {
   }
 
   async stage_incentives() {
+    this.prompt.css({height: 100})
     this.setPrompt(`
-      _What's in it for me?_ you might be asking. Well, we thought of that!
-      Unlike other experiments you might have done, we don't have a fixed number of rounds.
+      The rest of the experiment is divided into two stages. In each stage you
+      will have ten minutes to earn as many points as you can. To make the
+      most money, you'll have to balance making fast choices and selecting
+      the best possible path.
     `)
     await this.continue()
-    let goal
-    if (PARAMS.time_limit) {
-      goal = 'earn the most money'
-      let time_limit = PARAMS.time_limit / 60
-      this.setPrompt(`
-        Instead, you will have **${2*time_limit} minutes** to collect **as many points as you can.**
-        At the end of the experiment, we will convert those points into a cash bonus:
-        **${this.options.bonus.describeScheme()}.**
-      `)
-      await this.continue()
-      this.setPrompt(`
-        The ${2*time_limit} minutes will be broken up into two stages of ${time_limit} minutes each.
-        We'll tell you more about the second stage later.
-      `)
-      await this.continue()
-    } else {
-      goal = 'finish the study as quickly as possible'
-      this.setPrompt(`
-        Instead, you will do as **as many rounds as it takes** to earn **${PARAMS.score_limit} points.**
-      `)
-      await this.continue()
-    }
+
     this.setPrompt(`
-      To ${goal}, you'll have to balance making fast choices and selecting the
-      best possible path.
+      Remember, you will earn ${this.options.bonus.describeScheme()} you
+      have at the end of the experiment. The clock pauses between
+      rounds, so you can take a break without sacrificing bonus payment.
     `)
     await this.continue()
+    this.setPrompt(`
+
+    `)
+
     this.runNext()
   }
 

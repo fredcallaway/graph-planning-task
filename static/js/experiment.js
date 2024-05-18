@@ -73,12 +73,6 @@ async function runExperiment() {
   // score and bonus
   const SCORE = new Score()
   const BONUS = new Bonus({points_per_cent: PARAMS.points_per_cent, initial: 0})
-  registerEventCallback(info => {
-    if (info.event == 'graph.addPoints') {
-      SCORE.addPoints(info.points)
-      BONUS.addPoints(info.points)
-    }
-  })
 
 
   // DEFINE BLOCKS
@@ -98,10 +92,18 @@ async function runExperiment() {
     SCORE.attach(top.div)
 
     let timer = new Timer({label: 'Time Left: ', time: 60 * PARAMS.block_duration})
+    let cb = registerEventCallback(info => {
+      if (info.event == 'graph.done') {
+        timer.pause()
+      }
+      else if (info.event == 'graph.describe') {
+        timer.unpause()
+      }
+    })
     timer.attach(top.div)
     timer.css({float: 'right'})
-    // timer.pause()
     timer.run()
+    timer.pause()
 
     let workspace = $('<div>').appendTo(DISPLAY)
     while (!timer.done) {
@@ -113,6 +115,7 @@ async function runExperiment() {
       psiturk.recordUnstructuredData('BONUS', BONUS.dollars())
       saveData()
     }
+    removeEventCallback(cb)
 
     await new Prompt().attach(DISPLAY).showMessage(`
       <h1>Block ${name} complete</h1>
@@ -123,6 +126,14 @@ async function runExperiment() {
   }
 
   async function mainRevealed() {
+    // start tracking points
+    registerEventCallback(info => {
+      if (info.event == 'graph.addPoints') {
+        SCORE.addPoints(info.points)
+        BONUS.addPoints(info.points)
+      }
+    })
+
     for (i of _.range(PARAMS.n_block_revealed)) {
       await mainBlock(`${i+1}/${PARAMS.n_block_revealed}`, false)
     }
@@ -228,7 +239,6 @@ async function runExperiment() {
 
       <b>We are testing out a new experiment so feedback is really useful for us!</b>
     `))
-
 
     let feedback = text_box(div)
 

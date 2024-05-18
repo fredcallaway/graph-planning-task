@@ -324,7 +324,7 @@ class CircleGraph {
     this.logEvent('graph.showGraph')
     // this.setupEyeTracking()
 
-    if (this.options.reward_info) {
+    if (this.options.show_description && this.options.reward_info) {
       $('<p>')
       .addClass('subtle-desc')
       .html(
@@ -333,7 +333,6 @@ class CircleGraph {
       .addClass('graph-description')
       .css({transform: 'translate(0, -30px)'})
       .appendTo(this.el)
-
     }
 
     if (this.options.hide_states || this.options.hover_rewards) this.el.classList.add('hideStates');
@@ -366,34 +365,7 @@ class CircleGraph {
   }
 
   async showStartScreen() {
-    // if (FAST_MODE) {
-    //   this.showGraph()
-    //   return
-    // }
     this.logEvent('graph.showStartScreen')
-    if (this.options.actions) {
-      $('<div>')
-      .addClass('pressspace')
-      .css({
-        'text-align': 'left',
-        'font-size': 20,
-        'margin-top': 100,
-        'margin-bottom': -125,
-      })
-      .html(markdown(`
-        ## Participant Playback
-
-        - step through actions with space
-        - the next hovered state is highlighted in yellow (green for initial state)
-        - you can change which participant and trial you are viewing with url parameters, e.g.
-          \`?demo=v15/P02&trial=3\`
-        - press enter to begin
-      `))
-      .appendTo(this.root)
-      await getKeyPress(['enter'])
-      $('.pressspace').remove()
-    }
-
     this.graphContainer.css({border: 'thin white solid'}) // WTF why does this fix positioning??
 
     if (this.options.start_message) {
@@ -413,27 +385,29 @@ class CircleGraph {
       $(this.el).hide()
     }
 
+    logEvent('graph.cross')
+    let cross = $('<p>')
+    .text('+')
+    .addClass('absolute-centered')
+    .css({fontSize: 60})
+    .appendTo(this.graphContainer)
+
+    await waitForKeypress([KEY_CONTINUE])
+    cross.remove()
+
+    logEvent('graph.describe')
     let desc = this.describeRewards().appendTo(this.graphContainer)
     await waitForKeypress([KEY_CONTINUE])
     desc.remove()
-
-    await sleep(200)
-    if (this.options.n_steps > 0) {
-      let moves = $('<p>')
-      .text(numString(this.options.n_steps, "move"))
-      .addClass('Graph-moves')
-      .appendTo(this.root)
-      await sleep(1000)
-      moves.remove()
-    }
+    // await sleep(200)
   }
 
   describeRewards() {
-    let div = $('<div>').addClass('describe-rewards').css({marginTop: 80})
+    let div = $('<div>').addClass('describe-rewards absolute-centered')
 
     for (let info of this.options.reward_info) {
       $('<p>').html(describeReward(info.val, info.desc))
-      .css({marginTop: 20})
+      // .css({marginTop: 20})
       .appendTo(div)
 
       if (!this.options.hide_states) {
