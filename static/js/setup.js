@@ -29,7 +29,7 @@ $(window).on('load', async () => {
       $('#load-icon').hide();
       let btn = button($('#display'), 'begin')
       btn.button.addClass('animate-bottom').css('margin-top', '40px')
-      await btn.clicked
+      await btn.promise()
     } else {
       $('#load-icon').hide();
     }

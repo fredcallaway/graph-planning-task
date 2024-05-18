@@ -57,19 +57,22 @@ class Button extends Input {
     window.btn = this.button
 
 
-    this.clicked = makePromise()
+    this._promise = makePromise()
     this.button.click(async () => {
       this.button.prop('disabled', true)
       logEvent('input.button.click', {name: this.name, text})
       await sleep(delay)
-      this.clicked.resolve()
-      if (!persistent) {
+      this._promise.resolve()
+      if (persistent) {
+        this.button.prop('disabled', false)
+      } else {
         this.button.remove()
       }
     })
   }
   promise() {
-    return this.clicked
+    this._promise = makePromise()
+    return this._promise
   }
   click(f) {
     this.button.click(f)
@@ -285,12 +288,14 @@ class Prompt {
     })
     .appendTo(this.div)
 
+    this.button = new Button().appendTo(this.div)
+
   }
   async showMessage(html) {
-    this.text.show()
+    this.div.show()
     this.text.html(html)
-    await button(this.div, 'continue').promise()
-    this.text.hide()
+    await this.button.promise()
+    this.div.hide()
   }
   appendTo(display) {
     this.div.appendTo(display)

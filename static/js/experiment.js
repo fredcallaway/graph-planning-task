@@ -136,24 +136,14 @@ async function runExperiment() {
   async function learnLocations() {
     DISPLAY.empty()
 
-    let prompt = $('<div>')
-    .addClass('text instructions')
-    .css({
-      height: 200,
-      marginTop: 20,
-      width: 800
-      // marginLeft: 200
-    })
-    .appendTo(DISPLAY)
-    async function showPrompt(html) {
-      prompt.show(); cgDiv.hide()
-      prompt.html(html + '<br><br>')
-      await button(prompt, 'continue').promise()
-      prompt.hide(); cgDiv.show()
-    }
-
+    let prompt = new Prompt().attach(DISPLAY)
     let cgDiv = $('<div>').appendTo(DISPLAY)
 
+    async function showPrompt(html) {
+      cgDiv.hide()
+      await prompt.showMessage(html)
+      cgDiv.show()
+    }
 
     await showPrompt(`
       <h1> Stage 2</h1>
@@ -175,7 +165,6 @@ async function runExperiment() {
       When an image appears, click its location on the board. You can continue to the
       next round when you get every image correct without making any mistakes.
     `)
-    prompt.hide()
     logEvent(`experiment.learn.1A`)
     await new CircleGraph({...PARAMS, mode: 'quizImage'}).run(cgDiv)
 
@@ -253,7 +242,7 @@ async function runExperiment() {
     //   choices: ['hardly', 'a bit', 'fairly', 'very']
     // }).appendTo(div)
 
-    await button(div, 'submit').clicked
+    await button(div, 'submit').promise()
     // this information is already in the log, but let's put it in one place
     logEvent('motivation.submitted', getInputValues({motivation, speedacc}))
   }
@@ -282,7 +271,7 @@ async function runExperiment() {
 
     let feedback = text_box(div)
 
-    await button(div, 'submit').clicked
+    await button(div, 'submit').promise()
     // this information is already in the log, but let's put it in one place
     logEvent('debrief.submitted', getInputValues({feedback}))
   }
@@ -294,7 +283,6 @@ async function runExperiment() {
     mainRevealed,
     learnLocations,
     mainHidden,
-    // motivation,
     // survey,
     debrief
   )
