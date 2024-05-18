@@ -4,12 +4,12 @@ let ensureSign = x => x > 0 ? "+" + x : "" + x
 
 const FAST_MODE = (new URLSearchParams(location.search)).get('fast') == '1'
 
-let KEY_CONTINUE = 'l'
+let KEY_CONTINUE = 'j'
 let KEY_SWITCH = 'k'
 let KEY_SELECT = 'j'
 
 if (urlParams.fred) {
-   KEY_CONTINUE = 'r'
+   KEY_CONTINUE = 't'
    KEY_SWITCH = 's'
    KEY_SELECT = 't'
 }
@@ -231,9 +231,9 @@ class CircleGraph {
     .appendTo(this.root)
 
 
-    let imgDivs = images.map(src => {
+    let imgDivs = images.map(name => {
       // for some reason we have to wrap the image in a div for click to work???
-      let i = $('<img>').addClass('quiz-image').prop({width: 80, src})
+      let i = $('<img>').addClass('quiz-image').prop({width: 80, src: 'static/images/' + name})
       return $('<div>').append(i).css({
         display: 'inline-flex',
         // border: '2px white solid',
