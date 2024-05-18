@@ -271,6 +271,38 @@ function alert_failure(opts = {}) {
   })
 }
 
+class Prompt {
+  constructor(options = {}) {
+    this.div = $('<div>')
+
+    this.text = $('<div>')
+    .addClass('text instructions')
+    .css({
+      height: 200,
+      marginTop: 20,
+      width: 800
+      // marginLeft: 200
+    })
+    .appendTo(this.div)
+
+  }
+  async showMessage(html) {
+    this.text.show()
+    this.text.html(html)
+    await button(this.div, 'continue').promise()
+    this.text.hide()
+  }
+  appendTo(display) {
+    this.div.appendTo(display)
+    return this
+  }
+  attach(display) {
+    display.empty()
+    this.div.appendTo(display)
+    return this
+  }
+}
+
 class TopBar {
     constructor(options = {}) {
     _.defaults(options, {

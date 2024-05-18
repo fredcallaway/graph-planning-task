@@ -3,8 +3,6 @@ PROLIFIC_CODE = 'CITBBJYS'
 
 PARAMS = undefined
 
-const SCORE = new Score()
-
 async function runExperiment() {
   // stimuli = await $.getJSON(`static/json/${CONDITION}.json`)
 
@@ -28,7 +26,9 @@ async function runExperiment() {
     reveal_by: 'hover',
     revealed: false,
     score_limit: undefined,
-    time_limit: 600,
+    n_block_hidden: 2,
+    n_block_revealed: 2,
+    block_duration: 5,
     points_per_cent: 1,
     images: [
       "static/images/baby.png",
@@ -57,28 +57,37 @@ async function runExperiment() {
   updateExisting(PARAMS, urlParams)
   psiturk.recordUnstructuredData('PARAMS', PARAMS);
 
-  const trials = _.mapValues(config.trials, block => block.map(t => ({...PARAMS, ...t})))
-  if (PARAMS.time_limit) {
-    PARAMS.score_limit = undefined
-  }
-  if (PARAMS.score_limit) {
-    PARAMS.points_per_cent = Infinity
-  }
-  const bonus = new Bonus({points_per_cent: PARAMS.points_per_cent, initial: 0})
-  // makeGlobal({config, PARAMS, trials})
-
-
   // logEvent is how you save data to the database
   logEvent('experiment.initialize', {condition: CONDITION, params: PARAMS, trials: config.trials})
   enforceScreenSize(1000, 780)
   DISPLAY.css({width: 1000})
 
-
-  async function instructions() {
-    await new GraphInstructions({trials, bonus}).run(DISPLAY)
+  // add PARAMS to all trials, create iterator
+  const trials = _.mapValues(config.trials, block => block.map(t => ({...PARAMS, ...t})))
+  let trialIdx = -1
+  function nextTrial() {
+    trialIdx += 1
+    return trials.main_revealed[trialIdx]
   }
 
-  async function main(trials, hidden) {
+  // score and bonus
+  const SCORE = new Score()
+  const BONUS = new Bonus({points_per_cent: PARAMS.points_per_cent, initial: 0})
+  registerEventCallback(info => {
+    if (info.event == 'graph.addPoints') {
+      SCORE.addPoints(info.points)
+      BONUS.addPoints(info.points)
+    }
+  })
+
+
+  // DEFINE BLOCKS
+
+  async function instructions() {
+    await new GraphInstructions({trials, bonus: BONUS}).run(DISPLAY)
+  }
+
+  async function mainBlock(name, hidden) {
     DISPLAY.empty()
     let top = new TopBar({
       // nTrial: trials.length,
@@ -87,77 +96,41 @@ async function runExperiment() {
     }).prependTo(DISPLAY)
 
     SCORE.attach(top.div)
-    // score.addPoints(50)
-    // bonus.addPoints(50)
 
-    // if (local) PARAMS.time_limit = 300
-
-    let timer = new Timer({label: 'Time Left: ', time: PARAMS.time_limit})
-    if (PARAMS.time_limit) {
-      timer.attach(top.div)
-      timer.css({float: 'right'})
-      timer.pause()
-      timer.run()
-    }
-
-    registerEventCallback(info => {
-      if (info.event == 'graph.addPoints') {
-        SCORE.addPoints(info.points)
-        bonus.addPoints(info.points)
-      }
-      else if (info.event == 'graph.done') {
-        timer.pause()
-      }
-      else if (info.event == 'graph.showGraph') {
-        timer.unpause()
-        // 2:18 2:24
-      }
-    })
-
-    function checkDone() {
-      if (PARAMS.score_limit && SCORE.score > PARAMS.score_limit) {
-        return true
-      } else if (PARAMS.time_limit && timer.done) {
-        return true
-      }
-      return false
-    }
+    let timer = new Timer({label: 'Time Left: ', time: 60 * PARAMS.block_duration})
+    timer.attach(top.div)
+    timer.css({float: 'right'})
+    // timer.pause()
+    timer.run()
 
     let workspace = $('<div>').appendTo(DISPLAY)
-    for (let [i, trial] of trials.entries()) {
-      if (checkDone()) break
-      workspace.empty()
-
-      // let start_message = PARAMS.score_limit ?
-      //   `You're ${PARAMS.score_limit - SCORE.score} points away from finishing` :
-
-      let start_message = undefined
-      let show_locations = false
-      if (i % 10 == 9) {
-        logEvent("experiment.main.progress")
-        start_message = bonus.reportBonus()
-        show_locations = hidden
-      }
-      let cg = new CircleGraph({...PARAMS, ...trial, start_message, show_locations,
-                                hover_edges: PARAMS.use_process_tracing, hide_states: hidden})
+    while (!timer.done) {
+      let trial = nextTrial()
+      let cg = new CircleGraph({...trial, hover_edges: PARAMS.use_process_tracing, hide_states: hidden})
 
       await cg.run(workspace)
-      timer.pause()
-
-      psiturk.recordUnstructuredData('bonus', bonus.dollars())
+      workspace.empty()
+      psiturk.recordUnstructuredData('BONUS', BONUS.dollars())
       saveData()
     }
+
+    await new Prompt().attach(DISPLAY).showMessage(`
+      <h1>Block ${name} complete</h1>
+
+      ${BONUS.reportBonus()}. Feel free to take a quick break, then click continue
+      when you're ready to move on.
+    `)
   }
 
   async function mainRevealed() {
-    await main(trials.main_revealed)
+    for (i of _.range(PARAMS.n_block_revealed)) {
+      await mainBlock(`${i+1}/${PARAMS.n_block_revealed}`, false)
+    }
   }
   async function mainHidden() {
-    await main(trials.main_hidden, true)
-  }
-  async function mainHiddenAlt() {
-    let tt = trials.main_hidden.map(t => ({...t, hide_states: true, hover_edges: false}))
-    await main(tt, false)
+    for (i of _.range(PARAMS.n_block_hidden)) {
+      await mainBlock(`${i+1}/${PARAMS.n_block_hidden}`, false)
+    }
   }
 
   async function learnLocations() {
@@ -172,9 +145,6 @@ async function runExperiment() {
       // marginLeft: 200
     })
     .appendTo(DISPLAY)
-
-    let cgDiv = $('<div>').appendTo(DISPLAY)
-
     async function showPrompt(html) {
       prompt.show(); cgDiv.hide()
       prompt.html(html + '<br><br>')
@@ -182,10 +152,13 @@ async function runExperiment() {
       prompt.hide(); cgDiv.show()
     }
 
+    let cgDiv = $('<div>').appendTo(DISPLAY)
+
+
     await showPrompt(`
       <h1> Stage 2</h1>
 
-      Great job! In Stage 1, you earned $${bonus.dollars().toFixed('2')}.
+      Great job! In Stage 1, you earned $${BONUS.dollars().toFixed('2')}.
       But don't get too confident—this next stage is going to be tougher!
     `)
 
