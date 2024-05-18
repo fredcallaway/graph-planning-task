@@ -101,10 +101,7 @@ async function runExperiment() {
 
     let timer = new Timer({label: 'Time Left: ', time: 60 * PARAMS.block_duration})
     let cb = registerEventCallback(info => {
-      if (info.event == 'graph.done') {
-        timer.pause()
-      }
-      else if (info.event == 'graph.describe') {
+      if (info.event == 'graph.describe') {
         timer.unpause()
       }
     })
@@ -119,6 +116,7 @@ async function runExperiment() {
       let cg = new CircleGraph({...trial, hover_edges: PARAMS.use_process_tracing, hide_states: hidden})
 
       await cg.run(workspace)
+      timer.pause()
       workspace.empty()
       psiturk.recordUnstructuredData('BONUS', BONUS.dollars())
       saveData()

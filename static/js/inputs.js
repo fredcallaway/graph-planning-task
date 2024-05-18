@@ -410,6 +410,7 @@ class Timer {
   }
 
   fmtTime(secs) {
+    sec = Math.ceil(secs)
     var minutes = Math.floor((secs) / 60);
     var seconds = secs - (minutes * 60);
 
@@ -431,10 +432,10 @@ class Timer {
     logEvent('timer.start')
     if (display) this.attach(display)
     while (this.time != 0) {
-      await sleep(1000)
+      await sleep(100)
       if (this.paused) continue
-      this.time -= 1
-      if (this.span) {
+      this.time -= .1
+      if (this.time % 1 == 0 && this.span) {
         this.updateDisplay()
       }
     }
