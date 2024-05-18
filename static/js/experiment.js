@@ -73,6 +73,13 @@ async function runExperiment() {
   // score and bonus
   const SCORE = new Score()
   const BONUS = new Bonus({points_per_cent: PARAMS.points_per_cent, initial: 0})
+  let practice = true
+  registerEventCallback(info => {
+    if (!practice && info.event == 'graph.addPoints') {
+      SCORE.addPoints(info.points)
+      BONUS.addPoints(info.points)
+    }
+  })
 
 
   // DEFINE BLOCKS
@@ -82,6 +89,7 @@ async function runExperiment() {
   }
 
   async function mainBlock(name, hidden) {
+    practice = false
     DISPLAY.empty()
     let top = new TopBar({
       // nTrial: trials.length,
@@ -127,20 +135,13 @@ async function runExperiment() {
 
   async function mainRevealed() {
     // start tracking points
-    registerEventCallback(info => {
-      if (info.event == 'graph.addPoints') {
-        SCORE.addPoints(info.points)
-        BONUS.addPoints(info.points)
-      }
-    })
-
     for (i of _.range(PARAMS.n_block_revealed)) {
       await mainBlock(`${i+1}/${PARAMS.n_block_revealed}`, false)
     }
   }
   async function mainHidden() {
     for (i of _.range(PARAMS.n_block_hidden)) {
-      await mainBlock(`${i+1}/${PARAMS.n_block_hidden}`, false)
+      await mainBlock(`${i+1}/${PARAMS.n_block_hidden}`, true)
     }
   }
 
