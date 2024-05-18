@@ -603,10 +603,10 @@ class CircleGraph {
       this.showState(state)
       this.addPoints(this.rewards[state], state)
       $(`.GraphNavigation-State-${state} > .GraphReward`).addClass('floatup')
-      await sleep(400)
+      await sleep(800)
       // $(`.GraphNavigation-State-${state} img`).css({transition: 'opacity 300ms'})
-      $(`.GraphNavigation-State-${state} img`).animate({opacity: 0}, 300)
-      await sleep(300)
+      await $(`.GraphNavigation-State-${state} img`).animate({opacity: 0}, 200).promise()
+      // await sleep(100)
 
       this.hover(state)  // why is this necessary?
 
@@ -650,16 +650,7 @@ class CircleGraph {
       // State transition
       const g = this.graph;
       const state = await this.keyTransition();
-      if (this.options.forced_hovers) {
-        this.hideAllEdges()
-        this.showEdge(this.state, state)
-        this.showState(state)
-      }
-      this.visitState(state)
-      if (this.options.forced_hovers) {
-        await sleep(500)
-        this.showOutgoingEdges(state)
-      }
+      await this.visitState(state)
       path.push(state)
 
       stepsLeft -= 1;
