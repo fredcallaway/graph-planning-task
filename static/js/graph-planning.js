@@ -135,6 +135,11 @@ class CircleGraph {
     } else if (this.options.mode == 'quizImage') {
       return await this.quizImageLocation()
     } else {
+      if (FAST_MODE) {
+        this.showGraph()
+        await this.navigate()
+        return
+      }
       this.setCurrentState(this.options.start)
       if (!this.options.skip_start) await this.showStartScreen()
       this.showGraph()
@@ -334,6 +339,15 @@ class CircleGraph {
       .css({transform: 'translate(0, -30px)'})
       .appendTo(this.el)
     }
+
+    // this.options.reward_info.forEach((info, i) => {
+    //   $('<div>').css({
+    //     float: ['right', 'left'][i],
+    //     scale: '1',
+    //     translate: '0px 90px'
+    //   }).html(describeReward(info.val, info.desc).replace('for', '<br>'))
+    //   .appendTo(this.el)
+    // })
 
     if (this.options.hide_states || this.options.hover_rewards) this.el.classList.add('hideStates');
     if (this.options.hide_edges || this.options.hover_edges) this.el.classList.add('hideEdges');
