@@ -236,6 +236,8 @@ async function runExperiment() {
     $('<p>').appendTo(div).html(markdown(`
       # You're done!
 
+      ${BONUS.reportBonus('final')}.
+
       If you have any feedback please provide it below (feel free to leave it empty!)
 
       <b>We are testing out a new experiment so feedback is really useful for us!</b>

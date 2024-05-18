@@ -24,8 +24,8 @@ class Bonus {
     let cents = Math.max(0, Math.round(this.points / this.points_per_cent))
     return cents / 100
   }
-  reportBonus() {
-    return `Your current bonus is $${this.dollars().toFixed('2')}`
+  reportBonus(kind='current') {
+    return `Your ${kind} bonus is $${this.dollars().toFixed('2')}`
   }
   describeScheme() {
     if (this.points_per_cent < 1) {
