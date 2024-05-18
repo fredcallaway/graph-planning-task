@@ -657,7 +657,7 @@ class CircleGraph {
       $("#GraphNavigation-steps").html(stepsLeft)
       if (termination(this, state) || stepsLeft == 0) {
         this.logEvent('graph.done')
-        await sleep(500)
+        // await sleep(500)
         $(".GraphNavigation-currentEdge").removeClass('GraphNavigation-currentEdge')
         if (options.leave_state) {
           // $(`.GraphNavigation-State-${state}`).animate({opacity: .1}, 500)
@@ -669,8 +669,7 @@ class CircleGraph {
           // $(this.el).empty()
         } else {
           await sleep(200)
-          $(this.el).animate({opacity: 0}, 200)
-          await sleep(500)
+          await $(this.el).animate({opacity: 0}, 300).promise()
         }
         // $(this.el).addClass('.GraphNavigation-terminated')
 
