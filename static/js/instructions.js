@@ -8,7 +8,7 @@ const fmtKey = (key) => `<code>${key.toUpperCase()}</code>`
 
 class GraphInstructions extends Instructions {
   constructor(options={}) {
-    super({...options, promptHeight: 60, width: 800})
+    super({...options, promptHeight: 60, width: 800, forwardOnly: true})
     this.trials = options.trials
     window.instruct = this
 
@@ -33,8 +33,6 @@ class GraphInstructions extends Instructions {
   async stage_welcome() {
     this.setPrompt(`
       Thanks for participating! We'll start with some quick instructions.
-      <br>
-      _psst: you can use the arrows above to flip through the pages_
     `)
 
 
@@ -228,7 +226,7 @@ class GraphInstructions extends Instructions {
     this.prompt.css({height: 100})
     this.setPrompt(`
       The rest of the experiment is divided into two stages. In each stage you
-      will have ten minutes to earn as many points as you can. To make the
+      will have ${PARAMS.block_duration} minutes to earn as many points as you can. To make the
       most money, you'll have to balance making fast choices and selecting
       the best possible path.
     `)
