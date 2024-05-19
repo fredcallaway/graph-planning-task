@@ -27,9 +27,7 @@ async function runExperiment() {
     reveal_by: 'hover',
     revealed: false,
     score_limit: undefined,
-    n_block_hidden: 2,
-    n_block_revealed: 2,
-    block_duration: 5,
+    block_duration: 7,
     points_per_cent: 1,
     images: [
       "static/images/baby.png",
@@ -89,7 +87,7 @@ async function runExperiment() {
     await new GraphInstructions({trials, bonus: BONUS}).run(DISPLAY)
   }
 
-  async function mainBlock(name, hidden) {
+  async function mainBlock(hidden) {
     practice = false
     DISPLAY.empty()
     let top = new TopBar({
@@ -101,8 +99,11 @@ async function runExperiment() {
     SCORE.attach(top.div)
 
     let timer = new Timer({label: 'Time Left: ', time: 60 * PARAMS.block_duration})
+
     let cb = registerEventCallback(info => {
+      console.log('in callback')
       if (info.event == 'graph.describe') {
+      console.log('in if')
         timer.unpause()
       }
     })
@@ -110,6 +111,7 @@ async function runExperiment() {
     timer.css({float: 'right'})
     timer.run()
     timer.pause()
+    makeGlobal({timer})
 
     let workspace = $('<div>').appendTo(DISPLAY)
     while (!timer.done) {
@@ -126,15 +128,11 @@ async function runExperiment() {
   }
 
   async function mainRevealed() {
-    // start tracking points
-    for (i of _.range(PARAMS.n_block_revealed)) {
-      await mainBlock(`${i+1}/${PARAMS.n_block_revealed}`, false)
-    }
+    await mainBlock(false)
   }
+
   async function mainHidden() {
-    for (i of _.range(PARAMS.n_block_hidden)) {
-      await mainBlock(`${i+1}/${PARAMS.n_block_hidden}`, true)
-    }
+    await mainBlock(true)
   }
 
   async function learnLocations() {

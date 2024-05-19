@@ -386,11 +386,12 @@ class TopBar {
 class Timer {
   constructor(options={}) {
     _.defaults(options, {
-      time: 10,
+      seconds: 10,
       countUp: false,
       label: '',
     })
     Object.assign(this, options)
+    this.msLeft = this.seconds * 1000
     this.span = null
     this.done = false
   }
@@ -406,11 +407,11 @@ class Timer {
   }
 
   updateDisplay() {
-    this.span.html(this.label + this.fmtTime(this.time))
+    this.span.html(this.label + this.fmtTime(this.msLeft))
   }
 
-  fmtTime(secs) {
-    secs = Math.ceil(secs)
+  fmtTime(ms) {
+    let secs = Math.ceil(ms / 1000)
     var minutes = Math.floor((secs) / 60);
     var seconds = secs - (minutes * 60);
 
@@ -431,11 +432,11 @@ class Timer {
   async run(display) {
     logEvent('timer.start')
     if (display) this.attach(display)
-    while (this.time != 0) {
+    while (this.msLeft > 0) {
       await sleep(100)
       if (this.paused) continue
-      this.time -= .1
-      if (this.time % 1 == 0 && this.span) {
+      this.msLeft -= 100
+      if (this.msLeft % 1 == 0 && this.span) {
         this.updateDisplay()
       }
     }
@@ -559,7 +560,8 @@ class Instructions {
     this.options = _.defaults(options, {
       width: 1000,
       promptHeight: 100,
-      helpText: DEFAULT_INSTRUCT_HELP
+      helpText: DEFAULT_INSTRUCT_HELP,
+      forwardOnly: false
     })
 
     this.div = $('<div>')
@@ -570,8 +572,10 @@ class Instructions {
       padding: '10px',
     })
 
+    this.top = $("<div>").appendTo(this.div)
+
     let help = $('<button>')
-    .appendTo(this.div)
+    .appendTo(this.top)
     .addClass('btn-help')
     .text('?')
     .click(async () => {
@@ -593,7 +597,7 @@ class Instructions {
     })
     .click(() => this.runPrev())
     .prop('disabled', true)
-    .appendTo(this.div)
+    .appendTo(this.top)
 
     this.btnNext = $('<button>')
     .addClass('btn')
@@ -605,7 +609,11 @@ class Instructions {
     })
     .click(() => this.runNext())
     .prop('disabled', true)
-    .appendTo(this.div)
+    .appendTo(this.top)
+
+    if (this.options.forwardOnly) {
+      this.top.hide()
+    }
 
     this.textDiv = $("<div>").css({marginLeft: 50}).appendTo(this.div)
     this.title = $('<h1>').addClass('text').appendTo(this.textDiv)
