@@ -98,12 +98,10 @@ async function runExperiment() {
 
     SCORE.attach(top.div)
 
-    let timer = new Timer({label: 'Time Left: ', time: 60 * PARAMS.block_duration})
+    let timer = new Timer({label: 'Time Left: ', seconds: 60 * PARAMS.block_duration})
 
     let cb = registerEventCallback(info => {
-      console.log('in callback')
       if (info.event == 'graph.describe') {
-      console.log('in if')
         timer.unpause()
       }
     })
@@ -247,7 +245,6 @@ async function runExperiment() {
     mainRevealed,
     learnLocations,
     mainHidden,
-    // survey,
     debrief
   )
 };

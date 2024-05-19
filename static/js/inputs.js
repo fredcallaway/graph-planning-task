@@ -386,10 +386,13 @@ class TopBar {
 class Timer {
   constructor(options={}) {
     _.defaults(options, {
-      seconds: 10,
+      seconds: undefined,  // must be specified
       countUp: false,
       label: '',
     })
+    if (options.seconds == undefined) {
+      throw new Exception("Must pass seconds option")
+    }
     Object.assign(this, options)
     this.msLeft = this.seconds * 1000
     this.span = null
