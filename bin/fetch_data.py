@@ -100,6 +100,7 @@ def write_data(version, mode):
             bonus[p.workerid] = meta['bonus']
 
         trialdata = [d['trialdata'] for d in datastring['data']]
+        meta['completed'] = any(e['event'] == "experiment.complete" for e in trialdata)
 
         with open(f'data/raw/{version}/events/{wid}.json', 'w') as f:
             json.dump(trialdata, f)
