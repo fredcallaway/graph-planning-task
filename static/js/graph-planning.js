@@ -330,24 +330,18 @@ class CircleGraph {
     // this.setupEyeTracking()
 
     if (this.options.show_description && this.options.reward_info) {
-      $('<p>')
-      .addClass('subtle-desc')
-      .html(
-        this.options.reward_info.map(info => describeReward(info.val, info.desc)).join('; ')
-      )
-      .addClass('graph-description')
-      .css({transform: 'translate(0, -30px)'})
-      .appendTo(this.el)
+      this.options.reward_info.forEach((info, i) => {
+        $('<div>')
+        .addClass('graph-description')
+        .css({
+          float: ['right', 'left'][i],
+          scale: '1',
+          translate: '0px 90px'
+        }).html(describeReward(info.val, info.desc).replace('for', '<br>'))
+        .appendTo(this.el)
+      })
     }
 
-    // this.options.reward_info.forEach((info, i) => {
-    //   $('<div>').css({
-    //     float: ['right', 'left'][i],
-    //     scale: '1',
-    //     translate: '0px 90px'
-    //   }).html(describeReward(info.val, info.desc).replace('for', '<br>'))
-    //   .appendTo(this.el)
-    // })
 
     if (this.options.hide_states || this.options.hover_rewards) this.el.classList.add('hideStates');
     if (this.options.hide_edges || this.options.hover_edges) this.el.classList.add('hideEdges');
@@ -418,19 +412,21 @@ class CircleGraph {
 
   describeRewards() {
     let div = $('<div>').addClass('describe-rewards absolute-centered')
+    .css({width: 600})
 
-    for (let info of this.options.reward_info) {
-      $('<p>').html(describeReward(info.val, info.desc))
-      // .css({marginTop: 20})
-      .appendTo(div)
+    this.options.reward_info.forEach((info, i) => {
+      let d = $("<div>").css({
+        float: ['right', 'left'][i],
+      }).appendTo(div)
+      $('<p>').html(describeReward(info.val, info.desc)).appendTo(d)
 
       if (!this.options.hide_states) {
-        let imgs = $('<div>').addClass('describe-rewards-box').appendTo(div)
+        let imgs = $('<div>').addClass('describe-rewards-box').appendTo(d)
         for (const t of info.targets) {
           $('<img>').prop('src', 'static/images/' + this.options.images[t]).prop('width', 80).appendTo(imgs)
         }
       }
-    }
+    })
     return div
   }
 

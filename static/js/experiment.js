@@ -10,6 +10,7 @@ async function runExperiment() {
   const config = await $.getJSON(`static/json/config/${CONDITION}.json`)
   window.config = config
   PARAMS = _.defaults(config.parameters, {
+    show_description: CONDITION % 2 == 0,
     two_stage: true,
     use_process_tracing: false,
     eye_tracking: false,
@@ -122,13 +123,6 @@ async function runExperiment() {
       saveData()
     }
     removeEventCallback(cb)
-
-    await new Prompt().attach(DISPLAY).showMessage(`
-      <h1>Block ${name} complete</h1>
-
-      ${BONUS.reportBonus()}. Feel free to take a quick break, then click continue
-      when you're ready to move on.
-    `)
   }
 
   async function mainRevealed() {

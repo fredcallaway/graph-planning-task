@@ -410,7 +410,7 @@ class Timer {
   }
 
   fmtTime(secs) {
-    sec = Math.ceil(secs)
+    secs = Math.ceil(secs)
     var minutes = Math.floor((secs) / 60);
     var seconds = secs - (minutes * 60);
 
