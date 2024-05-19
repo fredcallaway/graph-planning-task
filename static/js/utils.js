@@ -204,8 +204,9 @@ function markdown(txt) {
 };
 
 function sleep(ms) {
-  return new Promise(function(resolve) {
-    return window.setTimeout(resolve, ms);
+  return new Promise(function(resolve, reject) {
+    if (ms == null) reject('null ms')
+    window.setTimeout(resolve, ms);
   });
 };
 

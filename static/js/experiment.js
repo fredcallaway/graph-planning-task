@@ -12,6 +12,7 @@ async function runExperiment() {
   PARAMS = _.defaults(config.parameters, {
     show_description: CONDITION % 2 == 0,
     two_stage: true,
+    action_time: 2000,
     use_process_tracing: false,
     eye_tracking: false,
     hover_edges: false,
@@ -51,7 +52,7 @@ async function runExperiment() {
     width: 800,
     height: 600,
     scaleEdgeFactor: 1,
-    fixedXY: circleXY(config.trials.main_revealed[0].graph.length)
+    fixedXY: circleXY(config.trials.main[0].graph.length)
   };
   updateExisting(PARAMS, urlParams)
   psiturk.recordUnstructuredData('PARAMS', PARAMS);
@@ -66,7 +67,7 @@ async function runExperiment() {
   let trialIdx = -1
   function nextTrial() {
     trialIdx += 1
-    return trials.main_revealed[trialIdx]
+    return trials.main[trialIdx]
   }
 
   // score and bonus
@@ -104,6 +105,9 @@ async function runExperiment() {
       if (info.event == 'graph.describe') {
         timer.unpause()
       }
+      else if (info.event == 'graph.done') {
+        timer.pause()
+      }
     })
     timer.attach(top.div)
     timer.css({float: 'right'})
@@ -114,10 +118,8 @@ async function runExperiment() {
     let workspace = $('<div>').appendTo(DISPLAY)
     while (!timer.done) {
       let trial = nextTrial()
-      let cg = new CircleGraph({...trial, hover_edges: PARAMS.use_process_tracing, hide_states: hidden})
-
+      let cg = new CircleGraph({...trial, hover_edges: PARAMS.use_process_tracing, hide_states: hidden, delayedFeedback: true})
       await cg.run(workspace)
-      timer.pause()
       workspace.empty()
       psiturk.recordUnstructuredData('BONUS', BONUS.dollars())
       saveData()

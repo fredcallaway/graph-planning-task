@@ -18,7 +18,7 @@ class GraphInstructions extends Instructions {
     .appendTo(this.textDiv)
     .css({opacity: 0})
 
-
+    this.trialIdx = -1
     if (!PARAMS.use_process_tracing) {
       this.stages = this.stages.filter(stage => {
         return !stage.name.startsWith('stage_hover')
@@ -30,11 +30,15 @@ class GraphInstructions extends Instructions {
   // you can jump to a specific stage using it's position e.g.
   // http://127.0.0.1:8000/?instruct=2
 
+  nextTrial() {
+    this.trialIdx += 1
+    return this.trials.practice[this.trialIdx]
+  }
+
   async stage_welcome() {
     this.setPrompt(`
       Thanks for participating! We'll start with some quick instructions.
     `)
-
 
     await this.continue()
     this.runNext()
@@ -47,7 +51,7 @@ class GraphInstructions extends Instructions {
   }
 
   async stage_intro() {
-    let trial = {...this.trials.intro[0], revealed: true, reward_info: null}
+    let trial = {...this.trials.intro[0], revealed: true, reward_info: null, action_time: null, no_points: true}
     let cg = new CircleGraph(trial).attach(this.content);
     $(`.GraphNavigation-State img`).hide()
     cg.showGraph()
@@ -89,7 +93,7 @@ class GraphInstructions extends Instructions {
     this.setPrompt(`
       The goal of the game is to collect these images. Try it out!
     `)
-    let trial = {...this.trials.intro[1], revealed: true, reward_info: null}
+    let trial = {...this.trials.intro[1], revealed: true, reward_info: null, action_time: null}
     cg = new CircleGraph(trial).attach(this.content);
     cg.showGraph()
     cg.setCurrentState(trial.start)
@@ -116,11 +120,11 @@ class GraphInstructions extends Instructions {
     let div = $('<div>')
     .css({height: 300, position: 'relative'})
     .appendTo(this.content)
-    div.html(new CircleGraph(this.trials.intro_describe[0]).describeRewards())
+    div.html(new CircleGraph(this.nextTrial()).describeRewards())
 
-    for (let trial of this.trials.intro_describe) {
+    for (let i of _.range(3)) {
       div.empty()
-      cg = new CircleGraph(trial);
+      cg = new CircleGraph(this.nextTrial());
       cg.describeRewards().appendTo(div)
       await this.continue()
     }
@@ -135,41 +139,51 @@ class GraphInstructions extends Instructions {
       Press ${fmtKey(KEY_CONTINUE)} again to show the board,
       then use ${fmtKey(KEY_SWITCH)} and ${fmtKey(KEY_SELECT)} to select a path.`
     )
-    for (let trial of this.trials.practice_revealed) {
-      let cg = new CircleGraph({...trial, revealed: true, two_stage: false})
+    for (let i of _.range(3)) {
+      let cg = new CircleGraph({...this.nextTrial(), revealed: true, two_stage: false, action_time: null})
       await cg.run(this.content)
     }
     this.runNext()
   }
 
   async stage_practice_two_stage() {
-    this.setPrompt(`
-      One more thing. To encourage you to think ahead, each round has two phases: **planning** and **action**.
-    `)
-    await this.continue()
-    this.setPrompt(`
-      In the **planning** phase, you can see the whole board, but you can't move. After making a plan,
-      press ${fmtKey(KEY_SWITCH)} to enter the action phase.
-    `)
-    let cg = new CircleGraph({...this.trials.practice_revealed[0], revealed: true, skip_start: true})
-    cg.setCurrentState(cg.options.start)
-    cg.attach(this.content)
-    cg.showGraph()
-    // TODO FINISH
+    // this.setPrompt(`
+    //   One more thing. To encourage you to think ahead, each round has two phases: **planning** and **action**.
+    // `)
+    // let cg = new CircleGraph({...this.nextTrial(), revealed: true, action_time: null})
+    // cg.run(this.content)
 
-    await cg.plan()
+    // await eventPromise('graph.showGraph')
+    // this.setPrompt(`
+    //   In the **planning** phase, you can see the whole board, but you can't move. After making a plan,
+    //   press ${fmtKey(KEY_SWITCH)} to enter the action phase.
+    // `)
 
-    this.setPrompt(`
-      In the **action** phase, all of the images and connections disappear and you can
-      select your moves.
-    `)
-    await cg.navigate()
+    // await eventPromise('graph.navigate')
+
+    // this.setPrompt(`
+    //   In the **action** phase, all of the images and connections disappear and you can
+    //   select your moves.
+    // `)
+
+    // await eventPromise('graph.done')
+
+    // this.setPrompt(`
+    //   **Warning:** you have to enter each move within **two seconds**. If you don't make a choice, we will automatically
+    //   select whichever arrow is currently highlighted.
+    // `)
+    // await new CircleGraph({...this.nextTrial(), revealed: true}).run(this.content)
+
+    // this.setPrompt(`
+    //   One last thing. From now on, you won't see the outcomes of your choices until the end of the round.
+    // `)
+    // await new CircleGraph({...this.nextTrial(), revealed: true, delayedFeedback: true}).run(this.content)
 
     this.setPrompt(`
       Try a few more practice rounds.
     `)
-    for (let trial of this.trials.practice_revealed.slice(1)) {
-      let cg = new CircleGraph({...trial, revealed: true})
+    for (let i of _.range(3)) {
+      let cg = new CircleGraph({...this.nextTrial(), revealed: true})
       await cg.run(this.content)
     }
     this.runNext()

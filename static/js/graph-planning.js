@@ -73,6 +73,8 @@ class CircleGraph {
       show_successor_rewards: true,
       keep_hover: true,
       revealed: false,
+      delayedFeedback: false,
+      feedbackDuration: 5000
     })
     window.cg = this
     // successorKeys:  options.graphRenderOptions.successorKeys
@@ -483,6 +485,17 @@ class CircleGraph {
     // await sleep(100)
   }
 
+  async showFeedback(path) {
+    logEvent('graph.feedback', {path})
+    for (let [i, state] of path.entries()) {
+      let prev = i > 1 ? path[i-1] : this.options.start
+      // this.showEdge(prev, state)
+      this.showState(state)
+      this.addPoints(this.rewards[state], state)
+    }
+    await sleep(this.options.feedbackDuration)
+  }
+
   async enableExitImagination() {
     await waitForKeypress([KEY_SWITCH])
     let stateDiv = $(`.GraphNavigation-State-${this.state}`)
@@ -517,10 +530,26 @@ class CircleGraph {
   async keyTransition() {
     let choices = this.graph.successors(this.state)
     let idx = _.random(choices.length - 1)
+    for (const successor of choices) {
+      this.showEdge(this.state, successor)
+    }
+    let timeout = sleep(this.options.action_time).then(()=>"timeout")
     while (true) {
       this.highlightEdge(this.state, choices[idx])
-      let key = await waitForKeypress([KEY_SWITCH, KEY_SELECT])
-      if (key == KEY_SWITCH) {
+      let response = await Promise.any([waitForKeypress([KEY_SWITCH, KEY_SELECT]), timeout])
+      if (response == "timeout") {
+
+        this.logEvent('graph.key.timeout', {choice: choices[idx]})
+        this.highlightEdge(this.state, choices[idx], {cls: 'ErrorEdge'})
+        let msg = $('<h2>').text('too slow!')
+        .addClass('absolute-centered')
+        .css({color: 'red', top: '45%', backgroundColor: 'white', zIndex: 100})
+        .appendTo(this.root)
+        await sleep(2000)
+        msg.remove()
+        return choices[idx]
+
+      } else if (response == KEY_SWITCH) {
         this.logEvent('graph.key.switch', {choice: choices[idx]})
         idx = (idx + 1) % choices.length
       } else {
@@ -568,21 +597,22 @@ class CircleGraph {
   }
 
   async addPoints(points, state) {
+    if (this.options.no_points) return
     logEvent('graph.addPoints', {points})
-    if (points == 0) {
-      return
-    }
     this.setScore(this.score + points)
 
-    let cls = (points < 0) ? "loss" : "win"
+    let cls = (points < 0) ? "loss" : (points == 0) ? "neutral" : "win"
     let sign = (points < 0) ? "" : "+"
     let pop = $("<span>")
-    .addClass('pop ' + cls)
+    .addClass('reward ' + cls)
     .text(sign + points)
     .appendTo($(`.GraphNavigation-State-${state}`))
 
-    await sleep(1500)
-    pop.remove()
+    if (!this.options.delayedFeedback) {
+      pop.addClass('zoomup')
+      await sleep(1500)
+      pop.remove()
+    }
   }
 
   setScore(score) {
@@ -610,24 +640,27 @@ class CircleGraph {
     this.setCurrentState(state);
     if (!initial) {
       this.hideAllEdges()
-      this.showState(state)
-      this.addPoints(this.rewards[state], state)
-      $(`.GraphNavigation-State-${state} > .GraphReward`).addClass('floatup')
-      await sleep(800)
-      // $(`.GraphNavigation-State-${state} img`).css({transition: 'opacity 300ms'})
-      await $(`.GraphNavigation-State-${state} img`).animate({opacity: 0}, 200).promise()
-      // await sleep(100)
-
-      this.hover(state)  // why is this necessary?
-
-      if (this.options.consume) {
-        this.rewards[state] = 0
-        $(`.GraphNavigation-State-${state}`).addClass('consumed')
-        // let cls = (points < 0) ? "loss" : "win"
-        // let sign = (points < 0) ? "" : "+"
-        // $(`.GraphNavigation-State-${state} > .GraphReward`).remove()
+      if (!this.options.delayedFeedback) {
+        this.showState(state)
+        this.addPoints(this.rewards[state], state)
+        this.consume(state)
+        // $(`.GraphNavigation-State-${state} > .GraphReward`).addClass('floatup')
       }
     }
+  }
+
+  async consume(state) {
+    if (this.options.consume) {
+      this.rewards[state] = 0
+      // $(`.GraphNavigation-State-${state}`).addClass('consumed')
+      // let cls = (points < 0) ? "loss" : "win"
+      // let sign = (points < 0) ? "" : "+"
+      // $(`.GraphNavigation-State-${state} > .GraphReward`).remove()
+    }
+    await sleep(400)
+    await $(`.GraphNavigation-State-${state} img`).animate({opacity: 0}, 300)
+
+
   }
 
   async navigate(options) {
@@ -666,7 +699,6 @@ class CircleGraph {
       stepsLeft -= 1;
       $("#GraphNavigation-steps").html(stepsLeft)
       if (termination(this, state) || stepsLeft == 0) {
-        this.logEvent('graph.done')
         // await sleep(500)
         $(".GraphNavigation-currentEdge").removeClass('GraphNavigation-currentEdge')
         if (options.leave_state) {
@@ -678,7 +710,12 @@ class CircleGraph {
           // $(this.el).animate({opacity: 0}, 500); await sleep(500)
           // $(this.el).empty()
         } else {
-          await sleep(200)
+          await sleep(700)
+          if (this.options.delayedFeedback) {
+            // $(`.GraphNavigation-State-${state}`).css('anima')
+            this.setCurrentState(null)
+            await this.showFeedback(path)
+          }
           await $(this.el).animate({opacity: 0}, 300).promise()
         }
         // $(this.el).addClass('.GraphNavigation-terminated')
@@ -691,6 +728,7 @@ class CircleGraph {
       // await sleep(200);
       // await sleep(5)
     }
+    this.logEvent('graph.done')
     return path
   }
 
@@ -775,11 +813,11 @@ class CircleGraph {
     })
   }
 
-  highlightEdge(s1, s2, opt={}) {
+  highlightEdge(s1, s2, opt={cls: 'HighlightedEdge'}) {
     if (!opt.leavePrevious) {
-      $(`.GraphNavigation-edge,.GraphNavigation-arrow`).removeClass('HighlightedEdge')
+      $(`.GraphNavigation-edge,.GraphNavigation-arrow`).removeClass(opt.cls)
     }
-    $(`.GraphNavigation-edge-${s1}-${s2}`).addClass('HighlightedEdge')
+    $(`.GraphNavigation-edge-${s1}-${s2}`).addClass(opt.cls)
   }
 
   showState(state) {

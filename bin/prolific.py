@@ -9,7 +9,15 @@ from markdown import markdown
 import random
 from fire import Fire
 from functools import cache, cached_property
+import json
 
+from glob import glob
+def find_bonuses():
+    bonuses = {}
+    for fp in glob("data/raw/*/bonus.json"):
+        with open(fp) as f:
+            bonuses.update(json.load(f))
+    return bonuses
 
 class Prolific(object):
     """Prolific API wrapper and CLI interface.
@@ -134,7 +142,7 @@ class Prolific(object):
         else:
             print('No submissions to approve')
 
-    def assign_bonuses(self, study=0, bonuses='bonus.csv'):
+    def assign_bonuses(self, study=0, bonuses=None):
         """Assign bonuses specified in a dictionary or file.
 
         By default will use bonus.csv, which has format workerid,bonus_in_dollars (no header).
@@ -145,13 +153,14 @@ class Prolific(object):
             file = bonuses
 
             if file.endswith('.json'):
-                import json
                 with open(file) as f:
                     bonuses = json.load(f)
 
             if file.endswith('.csv'):
                 import pandas as pd
                 bonuses = dict(pd.read_csv(file, header=None).set_index(0)[1])
+        elif bonuses is None:
+            bonuses = find_bonuses()
 
         assert isinstance(bonuses, dict)
 
@@ -163,10 +172,10 @@ class Prolific(object):
         #     print(f'{n_bonused} participants already have bonuses, {len(bonuses) - n_bonused} to be bonused')
         participants = previous_bonus.keys()
         missing = set(bonuses.keys()) - set(participants)
-        if missing:
-            print('WARNING: some entries of bonuses.csv do not have submissions. Skipping these.')
-            print('\n'.join(f'{p},{bonus:.2f}' for p, bonus in bonuses.items() if p in missing))
-            print()
+        # if missing:
+        #     print('WARNING: some entries of bonuses.csv do not have submissions. Skipping these.')
+        #     print('\n'.join(f'{p},{bonus:.2f}' for p, bonus in bonuses.items() if p in missing))
+        #     print()
 
         new_bonus = {
             p: bonuses.get(p, 0) - previous_bonus[p] for p in participants
@@ -189,7 +198,7 @@ class Prolific(object):
             else:
                 print('NOT paying bonuses')
 
-    def pay(self, study=0, bonuses='bonus.csv'):
+    def pay(self, study=0, bonuses=None):
             """Run approve_all and then assign_bonuses for the given study."""
             self.approve_all(study)
             self.assign_bonuses(study, bonuses)
