@@ -74,7 +74,7 @@ class CircleGraph {
       keep_hover: true,
       revealed: false,
       delayedFeedback: false,
-      feedbackDuration: 5000
+      feedbackDuration: 3000
     })
     window.cg = this
     // successorKeys:  options.graphRenderOptions.successorKeys
