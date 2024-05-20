@@ -267,6 +267,27 @@ async function runExperiment() {
     await makePromise()
   }
 
+  async function megFinal() {
+    if (!urlParams.hitId == 'meg1') return
+    logEvent('experiment.complete')
+
+    const message = `PID: P${CONDITION}\nBONUS: $${BONUS.dollars().toFixed('2')}`.trim();
+
+    DISPLAY.empty()
+    $('<div>').appendTo(DISPLAY).addClass('text').html(`
+      <h1>Day 1 Complete</h1>
+
+      <a href="mailto:jonathan.nicholas@nyu.edu?subject=Experiment completed (P${CONDITION})&body=${encodeURIComponent(message)}">
+      Click here</a> to send a confirmation email to the experimenter.
+
+      Make sure the following information is in the email:
+      <br><br>
+      <pre>${message}</pre>
+    `)
+    await makePromise()
+
+  }
+
   // using runTimeline is optional, but it allows you to jump to different blocks
   // with url parameters, e.g. http://localhost:8000/?block=main
   if (urlParams.assignmentId == 'stage2') {
@@ -277,7 +298,8 @@ async function runExperiment() {
       mainRevealed,
       learnLocations,
       mainHidden,
-      debrief
+      debrief,
+      megFinal
     )
   }
 };
