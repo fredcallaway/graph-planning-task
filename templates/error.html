@@ -15,29 +15,23 @@
         {% if errornum == 1008 %}
 
         <p><b>Sorry, our records indicate that you have attempted to
-        complete this hit, but quit before finishing.</b></p>
-
-        <p>Because this is a Psychology experiment, you can only
-        complete this hit once.</p>
-
-        <p>Please release the hit so someone else can perform the
-        experiment.</p>
+        complete this study, but quit before finishing.</b></p>
 
         {% elif errornum == 1010 %}
 
         <h2>
           Sorry, our records indicate that you have already completed (or
-          attempted to complete) this hit.
+          attempted to complete) this study.
         </h2>
         <p>Because this is a Psychology experiment, you can only complete
-        this hit once.</p>
+        this study once.</p>
 
-        <p>Please release the hit so someone else can perform the
+        <p>Please release the study so someone else can perform the
         experiment.</p>
 
         {% elif errornum == 1014 %}
         <h2>Sorry, it looks like you're not using an allowed browser or device</h2>
-        <p>You cannot complete this HIT using a mobile device or Internet Explorer.</p>
+        <p>You cannot complete this study using a mobile device or Internet Explorer.</p>
 
         {% else %}
 
