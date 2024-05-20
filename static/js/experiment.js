@@ -28,7 +28,7 @@ async function runExperiment() {
     reveal_by: 'hover',
     revealed: false,
     score_limit: undefined,
-    block_duration: 7,
+    block_duration: 10,
     points_per_cent: 2,
     images: [
       "static/images/baby.png",
