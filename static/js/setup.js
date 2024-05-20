@@ -25,7 +25,7 @@ $(window).on('load', async () => {
   } else {
     await saveData()
     if (mode == 'live') {
-      await sleep(3000)
+      await sleep(1000)
       $('#load-icon').hide();
       let btn = button($('#display'), 'begin')
       btn.button.addClass('animate-bottom').css('margin-top', '40px')

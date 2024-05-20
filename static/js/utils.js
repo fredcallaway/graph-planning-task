@@ -154,6 +154,7 @@ async function runTimeline(...blocks) {
   for (const block of blocks) {
     logEvent('timeline.start.' + block.name)
     await block()
+    saveData()
     logEvent('timeline.end.' + block.name)
   }
 }

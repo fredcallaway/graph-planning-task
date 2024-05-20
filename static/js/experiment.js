@@ -121,7 +121,7 @@ async function runExperiment() {
       let cg = new CircleGraph({...trial, hover_edges: PARAMS.use_process_tracing, hide_states: hidden, delayedFeedback: true})
       await cg.run(workspace)
       workspace.empty()
-      psiturk.recordUnstructuredData('BONUS', BONUS.dollars())
+      psiturk.recordUnstructuredData('bonus', BONUS.dollars())
       saveData()
     }
     removeEventCallback(cb)
@@ -135,7 +135,7 @@ async function runExperiment() {
     await mainBlock(true)
   }
 
-  async function learnLocations() {
+  async function learnLocations(stage2=false) {
     DISPLAY.empty()
 
     let prompt = new Prompt().attach(DISPLAY)
@@ -147,76 +147,91 @@ async function runExperiment() {
       cgDiv.show()
     }
 
-    await showPrompt(`
-      <h1> Stage 2</h1>
+    if (stage2) {
+      await showPrompt(`
+        <h1>Review</h1>
 
-      Great job! In Stage 1, you earned $${BONUS.dollars().toFixed('2')}.
-      But don't get too confident—this next stage is going to be tougher!
-    `)
+        Welcome back! Before we get you in the MEG, let's do a quick review of
+        the image locations. We'll go through all three rounds, just like
+        you did online.
 
-    await showPrompt(`
-      <h1> Stage 2</h1>
+        The images should be in the same location as they were before. If they
+        aren't (either here or when you get in the MEG), please inform the
+        experimenter! They may have clicked the wrong link.
+      `)
+    } else {
+      await showPrompt(`
+        <h1> Stage 2</h1>
 
-      Specifically, we're not going to show you the images anymore. You'll have
-      to remember where the images are located if you want to keep earning points!
-    `)
+        Great job! In Stage 1, you earned $${BONUS.dollars().toFixed('2')}.
+        But don't get too confident—this next stage is going to be tougher!
+      `)
 
-    await showPrompt(`
-      <h1>Memory Check (1/3)</h1>
-      Before you continue, we want to make sure you've learned the location of each image.
-      When an image appears, click its location on the board. You can continue to the
-      next round when you get every image correct without making any mistakes.
-    `)
-    logEvent(`experiment.learn.1A`)
-    await new CircleGraph({...PARAMS, mode: 'quizImage'}).run(cgDiv)
+      await showPrompt(`
+        <h1> Stage 2</h1>
 
-    await showPrompt(`
-      <h1>Memory Check (1/3)</h1>
-      Great! Now let's try the reverse. We'll highlight a location, and you'll
-      click on the image that lives there.
-    `)
-    logEvent(`experiment.learn.1B`)
-    await new CircleGraph({...PARAMS, mode: 'quizLocation'}).run(cgDiv)
+        Specifically, we're not going to show you the images anymore. You'll have
+        to remember where the images are located if you want to keep earning points!
+      `)
+    }
 
 
-    await showPrompt(`
-      <h1>Memory Check (2/3)</h1>
-      Well done! Now we're going to make it a bit harder. This time, you have
-      to click the correct location within <b>3 seconds</b> of the image appearing.
-      If you're too slow, it will count as a mistake.
-    `)
-    logEvent(`experiment.learn.2A`)
-    await new CircleGraph({...PARAMS, mode: 'quizImage', timeLimit: 3000}).run(cgDiv)
+    // await showPrompt(`
+    //   <h1>Memory Check (1/3)</h1>
+    //   Before you continue, we want to make sure you've learned the location of each image.
+    //   When an image appears, click its location on the board. You can continue to the
+    //   next round when you get every image correct without making any mistakes.
+    // `)
+    // logEvent(`experiment.learn.1A`)
+    // await new CircleGraph({...PARAMS, mode: 'quizImage'}).run(cgDiv)
 
-    await showPrompt(`
-      <h1>Memory Check (2/3)</h1>
-      Great! Let's try the reverse version with the time limit.
-    `)
-    logEvent(`experiment.learn.2B`)
-    await new CircleGraph({...PARAMS, mode: 'quizLocation', timeLimit: 3000}).run(cgDiv)
+    // await showPrompt(`
+    //   <h1>Memory Check (1/3)</h1>
+    //   Great! Now let's try the reverse. We'll highlight a location, and you'll
+    //   click on the image that lives there.
+    // `)
+    // logEvent(`experiment.learn.1B`)
+    // await new CircleGraph({...PARAMS, mode: 'quizLocation'}).run(cgDiv)
 
 
-    await showPrompt(`
-      <h1>Memory Check (3/3)</h1>
-      Alright! In this final round, you only have <b>2 seconds</b> to make your response.
-    `)
+    // await showPrompt(`
+    //   <h1>Memory Check (2/3)</h1>
+    //   Well done! Now we're going to make it a bit harder. This time, you have
+    //   to click the correct location within <b>3 seconds</b> of the image appearing.
+    //   If you're too slow, it will count as a mistake.
+    // `)
+    // logEvent(`experiment.learn.2A`)
+    // await new CircleGraph({...PARAMS, mode: 'quizImage', timeLimit: 3000}).run(cgDiv)
 
-    logEvent(`experiment.learn.3A`)
-    await new CircleGraph({...PARAMS, mode: 'quizImage', timeLimit: 2000}).run(cgDiv)
+    // await showPrompt(`
+    //   <h1>Memory Check (2/3)</h1>
+    //   Great! Let's try the reverse version with the time limit.
+    // `)
+    // logEvent(`experiment.learn.2B`)
+    // await new CircleGraph({...PARAMS, mode: 'quizLocation', timeLimit: 3000}).run(cgDiv)
 
-    await showPrompt(`
-      <h1>Memory Check (3/3)</h1>
-      And the reverse...
-    `)
 
-    logEvent(`experiment.learn.3A`)
-    await new CircleGraph({...PARAMS, mode: 'quizLocation', timeLimit: 2000}).run(cgDiv)
+    // await showPrompt(`
+    //   <h1>Memory Check (3/3)</h1>
+    //   Alright! In this final round, you only have <b>2 seconds</b> to make your response.
+    // `)
 
-    await showPrompt(`
-      <h1>Stage 2</h1>
-      Awesome! It looks like you've learned where all the images live.
-      You're now ready to begin Stage 2. Good luck!
-    `)
+    // logEvent(`experiment.learn.3A`)
+    // await new CircleGraph({...PARAMS, mode: 'quizImage', timeLimit: 2000}).run(cgDiv)
+
+    // await showPrompt(`
+    //   <h1>Memory Check (3/3)</h1>
+    //   And the reverse...
+    // `)
+
+    // logEvent(`experiment.learn.3A`)
+    // await new CircleGraph({...PARAMS, mode: 'quizLocation', timeLimit: 2000}).run(cgDiv)
+
+    // await showPrompt(`
+    //   <h1>Stage 2</h1>
+    //   Awesome! It looks like you've learned where all the images live.
+    //   You're now ready to begin Stage 2. Good luck!
+    // `)
   }
 
   async function debrief() {
@@ -240,13 +255,29 @@ async function runExperiment() {
     logEvent('debrief.submitted', getInputValues({feedback}))
   }
 
+  async function stage2() {
+    await learnLocations(true)
+    await saveData()
+    DISPLAY.empty()
+    $('<div>').appendTo(DISPLAY).addClass('text').html(`
+      <h1>Memory review complete</h1>
+
+      Let the experimenter know that you're ready to move on.
+    `)
+    await makePromise()
+  }
+
   // using runTimeline is optional, but it allows you to jump to different blocks
   // with url parameters, e.g. http://localhost:8000/?block=main
-  await runTimeline(
-    instructions,
-    mainRevealed,
-    learnLocations,
-    mainHidden,
-    debrief
-  )
+  if (urlParams.assignmentId == 'stage2') {
+    await stage2()
+  } else {
+    await runTimeline(
+      instructions,
+      mainRevealed,
+      learnLocations,
+      mainHidden,
+      debrief
+    )
+  }
 };
