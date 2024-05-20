@@ -94,16 +94,15 @@ def write_data(version, mode):
                     meta[k1] = v1
 
             else:
+                if k == 'BONUS':
+                    k = 'bonus'
                 meta[k] = v
         participants.append(meta)
         if 'bonus' in meta:
             bonus[p.workerid] = meta['bonus']
-        elif 'BONUS' in meta:
-            bonus[p.workerid] = meta['BONUS']
-
 
         trialdata = [d['trialdata'] for d in datastring['data']]
-        meta['completed'] = any(e['event'] == "experiment.complete" for e in trialdata)
+        meta['completed'] = any(e['event'] in ("experiment.complete", "debrief.submitted") for e in trialdata)
 
         with open(f'data/raw/{version}/events/{wid}.json', 'w') as f:
             json.dump(trialdata, f)
