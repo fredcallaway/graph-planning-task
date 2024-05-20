@@ -10,7 +10,7 @@ async function runExperiment() {
   const config = await $.getJSON(`static/json/config/${CONDITION}.json`)
   window.config = config
   PARAMS = _.defaults(config.parameters, {
-    show_description: CONDITION % 2 == 0,
+    show_description: true,
     two_stage: true,
     action_time: 2000,
     use_process_tracing: false,
