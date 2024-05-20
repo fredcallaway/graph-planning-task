@@ -395,7 +395,7 @@ class CircleGraph {
       $(this.el).hide()
     }
 
-    logEvent('graph.cross')
+    this.logEvent('graph.cross')
     let cross = $('<p>')
     .text('+')
     .addClass('absolute-centered')
@@ -405,7 +405,7 @@ class CircleGraph {
     await waitForKeypress([KEY_CONTINUE])
     cross.remove()
 
-    logEvent('graph.describe')
+    this.logEvent('graph.describe')
     let desc = this.describeRewards().appendTo(this.graphContainer)
     await waitForKeypress([KEY_CONTINUE])
     desc.remove()
@@ -486,7 +486,7 @@ class CircleGraph {
   }
 
   async showFeedback(path) {
-    logEvent('graph.feedback', {path})
+    this.logEvent('graph.feedback', {path})
     for (let [i, state] of path.entries()) {
       let prev = i > 1 ? path[i-1] : this.options.start
       // this.showEdge(prev, state)
@@ -598,7 +598,7 @@ class CircleGraph {
 
   async addPoints(points, state) {
     if (this.options.no_points) return
-    logEvent('graph.addPoints', {points})
+    this.logEvent('graph.addPoints', {points})
     this.setScore(this.score + points)
 
     let cls = (points < 0) ? "loss" : (points == 0) ? "neutral" : "win"
