@@ -52,7 +52,7 @@ async function runExperiment() {
     width: 800,
     height: 600,
     scaleEdgeFactor: 1,
-    fixedXY: circleXY(config.trials.main[0].graph.length)
+    fixedXY: circleXY(config.trials.main_revealed[0].graph.length)
   };
   updateExisting(PARAMS, urlParams)
   psiturk.recordUnstructuredData('PARAMS', PARAMS);
@@ -64,11 +64,6 @@ async function runExperiment() {
 
   // add PARAMS to all trials, create iterator
   const trials = _.mapValues(config.trials, block => block.map(t => ({...PARAMS, ...t})))
-  let trialIdx = -1
-  function nextTrial() {
-    trialIdx += 1
-    return trials.main[trialIdx]
-  }
 
   // score and bonus
   const SCORE = new Score()
@@ -88,7 +83,7 @@ async function runExperiment() {
     await new GraphInstructions({trials, bonus: BONUS}).run(DISPLAY)
   }
 
-  async function mainBlock(hidden) {
+  async function mainBlock(trials, hidden) {
     practice = false
     DISPLAY.empty()
     let top = new TopBar({
@@ -116,8 +111,11 @@ async function runExperiment() {
     makeGlobal({timer})
 
     let workspace = $('<div>').appendTo(DISPLAY)
+    let i = -1
     while (!timer.done) {
-      let trial = nextTrial()
+      i += 1
+      let trial = trials[i]
+      console.log('trial', trial)
       let cg = new CircleGraph({...trial, hover_edges: PARAMS.use_process_tracing, hide_states: hidden, delayedFeedback: true})
       await cg.run(workspace)
       workspace.empty()
@@ -128,11 +126,11 @@ async function runExperiment() {
   }
 
   async function mainRevealed() {
-    await mainBlock(false)
+    await mainBlock(trials.main_revealed, false)
   }
 
   async function mainHidden() {
-    await mainBlock(true)
+    await mainBlock(trials.main_hidden, true)
   }
 
   async function learnLocations(stage2=false) {
@@ -175,63 +173,61 @@ async function runExperiment() {
       `)
     }
 
+    await showPrompt(`
+      <h1>Memory Check (1/3)</h1>
+      Before you continue, we want to make sure you've learned the location of each image.
+      When an image appears, click its location on the board. You can continue to the
+      next round when you get every image correct without making any mistakes.
+    `)
+    logEvent(`experiment.learn.1A`)
+    await new CircleGraph({...PARAMS, mode: 'quizImage'}).run(cgDiv)
 
-    // await showPrompt(`
-    //   <h1>Memory Check (1/3)</h1>
-    //   Before you continue, we want to make sure you've learned the location of each image.
-    //   When an image appears, click its location on the board. You can continue to the
-    //   next round when you get every image correct without making any mistakes.
-    // `)
-    // logEvent(`experiment.learn.1A`)
-    // await new CircleGraph({...PARAMS, mode: 'quizImage'}).run(cgDiv)
+    await showPrompt(`
+      <h1>Memory Check (1/3)</h1>
+      Great! Now let's try the reverse. We'll highlight a location, and you'll
+      click on the image that lives there.
+    `)
+    logEvent(`experiment.learn.1B`)
+    await new CircleGraph({...PARAMS, mode: 'quizLocation'}).run(cgDiv)
 
-    // await showPrompt(`
-    //   <h1>Memory Check (1/3)</h1>
-    //   Great! Now let's try the reverse. We'll highlight a location, and you'll
-    //   click on the image that lives there.
-    // `)
-    // logEvent(`experiment.learn.1B`)
-    // await new CircleGraph({...PARAMS, mode: 'quizLocation'}).run(cgDiv)
+    await showPrompt(`
+      <h1>Memory Check (2/3)</h1>
+      Well done! Now we're going to make it a bit harder. This time, you have
+      to click the correct location within <b>3 seconds</b> of the image appearing.
+      If you're too slow, it will count as a mistake.
+    `)
+    logEvent(`experiment.learn.2A`)
+    await new CircleGraph({...PARAMS, mode: 'quizImage', timeLimit: 3000}).run(cgDiv)
 
-
-    // await showPrompt(`
-    //   <h1>Memory Check (2/3)</h1>
-    //   Well done! Now we're going to make it a bit harder. This time, you have
-    //   to click the correct location within <b>3 seconds</b> of the image appearing.
-    //   If you're too slow, it will count as a mistake.
-    // `)
-    // logEvent(`experiment.learn.2A`)
-    // await new CircleGraph({...PARAMS, mode: 'quizImage', timeLimit: 3000}).run(cgDiv)
-
-    // await showPrompt(`
-    //   <h1>Memory Check (2/3)</h1>
-    //   Great! Let's try the reverse version with the time limit.
-    // `)
-    // logEvent(`experiment.learn.2B`)
-    // await new CircleGraph({...PARAMS, mode: 'quizLocation', timeLimit: 3000}).run(cgDiv)
+    await showPrompt(`
+      <h1>Memory Check (2/3)</h1>
+      Great! Let's try the reverse version with the time limit.
+    `)
+    logEvent(`experiment.learn.2B`)
+    await new CircleGraph({...PARAMS, mode: 'quizLocation', timeLimit: 3000}).run(cgDiv)
 
 
-    // await showPrompt(`
-    //   <h1>Memory Check (3/3)</h1>
-    //   Alright! In this final round, you only have <b>2 seconds</b> to make your response.
-    // `)
+    await showPrompt(`
+      <h1>Memory Check (3/3)</h1>
+      Alright! In this final round, you only have <b>2 seconds</b> to make your response.
+    `)
 
-    // logEvent(`experiment.learn.3A`)
-    // await new CircleGraph({...PARAMS, mode: 'quizImage', timeLimit: 2000}).run(cgDiv)
+    logEvent(`experiment.learn.3A`)
+    await new CircleGraph({...PARAMS, mode: 'quizImage', timeLimit: 2000}).run(cgDiv)
 
-    // await showPrompt(`
-    //   <h1>Memory Check (3/3)</h1>
-    //   And the reverse...
-    // `)
+    await showPrompt(`
+      <h1>Memory Check (3/3)</h1>
+      And the reverse...
+    `)
 
-    // logEvent(`experiment.learn.3A`)
-    // await new CircleGraph({...PARAMS, mode: 'quizLocation', timeLimit: 2000}).run(cgDiv)
+    logEvent(`experiment.learn.3A`)
+    await new CircleGraph({...PARAMS, mode: 'quizLocation', timeLimit: 2000}).run(cgDiv)
 
-    // await showPrompt(`
-    //   <h1>Stage 2</h1>
-    //   Awesome! It looks like you've learned where all the images live.
-    //   You're now ready to begin Stage 2. Good luck!
-    // `)
+    await showPrompt(`
+      <h1>Stage 2</h1>
+      Awesome! It looks like you've learned where all the images live.
+      You're now ready to begin Stage 2. Good luck!
+    `)
   }
 
   async function debrief() {
