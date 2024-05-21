@@ -29,7 +29,7 @@ async function runExperiment() {
     revealed: false,
     score_limit: undefined,
     block_duration: 10,
-    points_per_cent: 2,
+    points_per_cent: 1,
     images: [
       "static/images/baby.png",
       "static/images/ball.png",
