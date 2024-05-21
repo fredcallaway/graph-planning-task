@@ -85,6 +85,7 @@ def write_data(version, mode):
         wid = anonymize(p.workerid)
 
         meta = pick(datastring, metakeys)
+        meta['workerid'] = p.workerid
         meta['wid'] = wid
         for k, v in datastring['questiondata'].items():
             if k.lower() == 'params':
