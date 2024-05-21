@@ -274,7 +274,7 @@ async function runExperiment() {
       <h1>Day 1 Complete</h1>
 
       <a href="mailto:jonathan.nicholas@nyu.edu?subject=Experiment completed (P${CONDITION})&body=${encodeURIComponent(message)}">
-      Click here</a> to send a confirmation email to the experimenter.
+      Click here</a> to send a confirmation email to the experimenter (jonathan.nicholas@nyu.edu).
 
       Make sure the following information is in the email:
       <br><br>
