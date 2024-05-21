@@ -1,7 +1,7 @@
 [Task Parameters]
-experiment_code_version = v30
+experiment_code_version = vm1
 # this number determines how many values the CONDITION variable can take
-num_conds = 30
+num_conds = 100
 # don't change this
 num_counters = 1
 
@@ -11,13 +11,13 @@ table_name = participants
 
 [Prolific]
 name = Puzzle Game
-reward = 400
+reward = 500
 external_study_url = https://graph-planning-634e23467632.herokuapp.com/consent?mode=live&hitId=prolific&workerId={{%%PROLIFIC_PID%%}}&STUDY_ID={{%%STUDY_ID%%}}&assignmentId={{%%SESSION_ID%%}}
 total_available_places = 10
-estimated_completion_time = 30
+estimated_completion_time = 35
 description =
     In this study, you will solve a series of puzzles. Based on your performance,
-    you can earn a bonus of up to $3.
+    you can earn a bonus of up to $4.50.
 
 
 [Server Parameters]
