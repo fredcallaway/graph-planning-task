@@ -264,7 +264,7 @@ async function runExperiment() {
   }
 
   async function megFinal() {
-    if (!urlParams.hitId == 'meg1') return
+    if (!(urlParams.hitId == 'meg1')) return
     logEvent('experiment.complete')
 
     const message = `PID: P${CONDITION}\nBONUS: $${BONUS.dollars().toFixed('2')}`.trim();
