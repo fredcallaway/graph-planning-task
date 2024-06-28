@@ -284,8 +284,21 @@ async function runExperiment() {
 
   }
 
+
+  async function survey() {
+    _.shuffle(CLINICAL_SURVEY.pages.slice(0,-1)).forEach((x, i) => {
+      x.elements[0].rows = _.shuffle(x.elements[0].rows)
+      CLINICAL_SURVEY.pages[i] = x
+    })
+    await new SurveyTrial(CLINICAL_SURVEY).run(DISPLAY)
+  }
+
   // using runTimeline is optional, but it allows you to jump to different blocks
   // with url parameters, e.g. http://localhost:8000/?block=main
+  if (urlParams.assignmentId == 'survey') {
+    await survey()
+    return
+  }
   if (urlParams.assignmentId == 'stage2') {
     await stage2()
   } else {

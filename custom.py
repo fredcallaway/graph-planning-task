@@ -57,6 +57,16 @@ def test():
     }
     return redirect(url_for('start_exp', **args))
 
+@custom_code.route('/survey')
+def survey():
+    args = {
+        'hitId': 'survey',
+        'assignmentId': 'survey',
+        'workerId': request.args['id'],
+        'mode': 'live',
+    }
+    return redirect(url_for('start_exp', **args))
+
 
 def get_participants(codeversion):
     return (
