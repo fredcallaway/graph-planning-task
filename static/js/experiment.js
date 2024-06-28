@@ -296,7 +296,7 @@ async function runExperiment() {
     await writable.write(JSON.stringify(results));
     await writable.close();
 
-    $('<div>')
+    let msg = $('<div>')
     .css({
       textAlign: 'center',
       width: 400,
@@ -308,7 +308,7 @@ async function runExperiment() {
 
       <p>Let the experimenter know if the screen does not turn gray in a few seconds.
     `).hide()
-    .appendTo(document.body)
+    $(document.body).html(msg)
 
     await makePromise()
   }
