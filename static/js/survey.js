@@ -81,6 +81,7 @@ class SurveyTrial {
     this.survey.render('_survey_target');
     let results = await this.results
     logEvent('survey.results', {results})
+    return results
   }
 }
 
@@ -90,9 +91,9 @@ const CLINICAL_SURVEY = {
  "title": "Mental Health Questionnaire",
  "useHTML": true,
  "description": `
-In the final phase of the experiment, we would like to ask you a few questions \
+Before we start, we would like to ask you a few questions \
 about issues that many people experience. By relating your answers to \
-these questions to your performance in the previous part of the \
+these questions to your behavior in the next section of the \
 experiment, we hope to be able to help people that struggle with these \
 types of issues. <div class='alert alert-info'><b>Important!</b>
 You can skip any question that you do not wish to answer. \

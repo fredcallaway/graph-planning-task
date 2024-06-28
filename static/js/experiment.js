@@ -290,7 +290,11 @@ async function runExperiment() {
       x.elements[0].rows = _.shuffle(x.elements[0].rows)
       CLINICAL_SURVEY.pages[i] = x
     })
-    await new SurveyTrial(CLINICAL_SURVEY).run(DISPLAY)
+    let results = await new SurveyTrial(CLINICAL_SURVEY).run(DISPLAY)
+    const handle = await window.showSaveFilePicker({startIn: 'documents', suggestedName: uniqueId + '.json'});
+    const writable = await handle.createWritable();
+    await writable.write(JSON.stringify(results));
+    await writable.close();
   }
 
   // using runTimeline is optional, but it allows you to jump to different blocks
