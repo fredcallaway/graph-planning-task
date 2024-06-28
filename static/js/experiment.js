@@ -295,6 +295,22 @@ async function runExperiment() {
     const writable = await handle.createWritable();
     await writable.write(JSON.stringify(results));
     await writable.close();
+
+    $('<div>')
+    .css({
+      textAlign: 'center',
+      width: 400,
+      margin: 'auto',
+      marginTop: '100px'
+    })
+    .html(`
+      <h4>Survey Complete</h4>
+
+      <p>Let the experimenter know if the screen does not turn gray in a few seconds.
+    `).hide()
+    .appendTo(document.body)
+
+    await makePromise()
   }
 
   // using runTimeline is optional, but it allows you to jump to different blocks

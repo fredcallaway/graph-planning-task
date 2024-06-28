@@ -24,7 +24,7 @@ $(window).on('load', async () => {
     $('#display').empty()
   } else {
     await saveData()
-    if (mode == 'live') {
+    if (mode == 'live' && urlParams.assignmentId != 'survey') {
       await sleep(1000)
       $('#load-icon').hide();
       let btn = button($('#display'), 'begin')
