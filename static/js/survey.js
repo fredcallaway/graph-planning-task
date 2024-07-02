@@ -231,19 +231,19 @@ sense to you, you should answer "Not at all" or "Never".
      "title": "Have you ever been professionally diagnosed with a psychiatric condition?",
      "choices": [
       {
-       "value": "Item 1",
+       "value": "anxiety",
        "text": "Anxiety (any form)"
       },
       {
-       "value": "Item 2",
+       "value": "depression",
        "text": "Depression (any form)"
       },
       {
-       "value": "Item 3",
+       "value": "add",
        "text": "Attention Deficit Disorder (ADD)"
       },
       {
-       "value": "Item 4",
+       "value": "ocd",
        "text": "Obsessive Compulsive Disorder (OCD)"
       }
      ],
