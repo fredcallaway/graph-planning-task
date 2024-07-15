@@ -104,6 +104,12 @@ tbody tr td:first-child {
   width: 40% !important;
   min-width: 40% !important;
 }
+.sd-table__cell--header:not(.sd-table__cell--empty) {
+    min-width: 80px !important
+}
+.sd-table__cell:not(.sd-table__cell--empty):not(.sd-table__cell--actions):not(:empty) {
+    min-width: 80px !important
+}
 
 .text {
   margin: auto;

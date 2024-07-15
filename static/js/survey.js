@@ -104,6 +104,40 @@ sense to you, you should answer "Not at all" or "Never".
 `,
  "pages": [
   {
+   "name": "SoC",
+   "elements": [
+    {
+     "type": "matrix",
+     "name": "SoC",
+     "title": "For each statement please check the circle corresponding to the answer that best represents your level of agreement with each statement as it applies to you.",
+     "columns": [
+      "Strongly disagree",
+      "Somewhat disagree",
+      "Disagree a little",
+      "Don't know",
+      "Agree a little",
+      "Somewhat agree",
+      "Strongly agree"
+     ],
+     "rows": [
+      "There is nothing I can do to change the weather",
+      "There is little I can do to change many of the important things in my life",
+      "I often feel helpless in dealing with the problems of life",
+      "I can do just about anything I really set my mind to do",
+      "Other people determine most of what I can and cannot do",
+      "What happens in my life is often beyond my control",
+      "When I really want to do something, I usually find a way to succeed at it",
+      "There are many things that interfere with what I want to do",
+      "Whether or not I am able to get what I want is in my own hands",
+      "I have little control over the things that happen to me",
+      "There is really no way I can solve some of the problems I have",
+      "Sometimes I feel that I am being pushed around in life",
+      "What happens to me in the future mostly depends on me"
+     ]
+    }
+   ]
+  },
+  {
    "name": "PHQ-9",
    "elements": [
     {
@@ -117,7 +151,7 @@ sense to you, you should answer "Not at all" or "Never".
        "Nearly every day"
      ],
      "rows": [
-       "Working all the time, more than twenty-four hours a day",
+       "Being unable to breathe for more than three minutes at a time",
        "Little interest or pleasure in doing things",
        "Feeling down, depressed, or hopeless",
        "Trouble falling or staying asleep, or sleeping too much",
@@ -172,7 +206,7 @@ sense to you, you should answer "Not at all" or "Never".
   //      "Very Often"
   //    ],
   //    "rows": [
-  //      "Being unable to breathe for more than three minutes at a time?",
+  //      "Working more than seven days a week?",
   //      "Trouble wrapping up the final details of a project, once the challenging parts have been done?",
   //      "Difficulty getting things in order when you have to do a task that requires organization?",
   //      "Problems remembering appointments or obligations?",
