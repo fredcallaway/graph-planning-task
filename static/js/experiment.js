@@ -3,6 +3,8 @@ PROLIFIC_CODE = 'CITBBJYS'
 
 PARAMS = undefined
 
+console.log('Updated Jul 16')
+
 async function runExperiment() {
   // stimuli = await $.getJSON(`static/json/${CONDITION}.json`)
 
