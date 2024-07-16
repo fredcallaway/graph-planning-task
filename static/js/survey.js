@@ -88,7 +88,7 @@ class SurveyTrial {
 
 const CLINICAL_SURVEY = {
  // "logoPosition": "right",
- "title": "Mental Health Questionnaire",
+ "title": "Survey",
  "useHTML": true,
  "description": `
 Before we start, we would like to ask you a few questions \
@@ -281,7 +281,8 @@ sense to you, you should answer "Not at all" or "Never".
        "text": "Obsessive Compulsive Disorder (OCD)"
       }
      ],
-     "showOtherItem": true
+     "showOtherItem": true,
+     "showNoneItem": true
     }
    ]
   },
