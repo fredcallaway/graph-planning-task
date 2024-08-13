@@ -91,9 +91,9 @@ const CLINICAL_SURVEY = {
  "title": "Survey",
  "useHTML": true,
  "description": `
-Before we start, we would like to ask you a few questions \
+We would like to ask you a few questions \
 about issues that many people experience. By relating your answers to \
-these questions to your behavior in the next section of the \
+these questions to your behavior in the \
 experiment, we hope to be able to help people that struggle with these \
 types of issues. <div class='alert alert-info'><b>Important!</b>
 You can skip any question that you do not wish to answer. \

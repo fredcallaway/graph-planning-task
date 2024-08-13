@@ -292,11 +292,16 @@ async function runExperiment() {
       x.elements[0].rows = _.shuffle(x.elements[0].rows)
       CLINICAL_SURVEY.pages[i] = x
     })
+    if (uniqueId.includes('debug') || uniqueId.includes('test')) {
+      CLINICAL_SURVEY.pages = [CLINICAL_SURVEY.pages[0]]
+    }
     let results = await new SurveyTrial(CLINICAL_SURVEY).run(DISPLAY)
     const handle = await window.showSaveFilePicker({startIn: 'documents', suggestedName: uniqueId + '.json'});
     const writable = await handle.createWritable();
     await writable.write(JSON.stringify(results));
     await writable.close();
+
+    console.log("SHOWING MESSAGE")
 
     let msg = $('<div>')
     .css({
@@ -309,7 +314,7 @@ async function runExperiment() {
       <h4>Survey Complete</h4>
 
       <p>Let the experimenter know if the screen does not turn gray in a few seconds.
-    `).hide()
+    `)
     $(document.body).html(msg)
 
     await makePromise()
@@ -319,6 +324,7 @@ async function runExperiment() {
   // with url parameters, e.g. http://localhost:8000/?block=main
   if (urlParams.assignmentId == 'survey') {
     await survey()
+
     return
   }
   if (urlParams.assignmentId == 'stage2') {
