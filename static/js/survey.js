@@ -191,77 +191,77 @@ sense to you, you should answer "Not at all" or "Never".
     }
    ]
   },
-  // {
-  //  "name": "ASRS-6",
-  //  "elements": [
-  //   {
-  //    "type": "matrix",
-  //    "name": "ASRS",
-  //    "title": "Over the last two weeks, how often have you been bothered by the following problems?",
-  //    "columns": [
-  //      "Never",
-  //      "Rarely",
-  //      "Sometimes",
-  //      "Often",
-  //      "Very Often"
-  //    ],
-  //    "rows": [
-  //      "Working more than seven days a week?",
-  //      "Trouble wrapping up the final details of a project, once the challenging parts have been done?",
-  //      "Difficulty getting things in order when you have to do a task that requires organization?",
-  //      "Problems remembering appointments or obligations?",
-  //      "When you have a task that requires a lot of thought, how often do you avoid or delay getting started?",
-  //      "Fidgeting or squirm with your hands or feet when you have to sit down for a long time?",
-  //      "Feeling overly active and compelled to do things, like you were driven by a motor?"
-  //    ]
-  //   }
-  //  ]
-  // },
+  {
+   "name": "ASRS-6",
+   "elements": [
+    {
+     "type": "matrix",
+     "name": "ASRS",
+     "title": "Over the last two weeks, how often have you been bothered by the following problems?",
+     "columns": [
+       "Never",
+       "Rarely",
+       "Sometimes",
+       "Often",
+       "Very Often"
+     ],
+     "rows": [
+       "Working more than seven days a week?",
+       "Trouble wrapping up the final details of a project, once the challenging parts have been done?",
+       "Difficulty getting things in order when you have to do a task that requires organization?",
+       "Problems remembering appointments or obligations?",
+       "When you have a task that requires a lot of thought, how often do you avoid or delay getting started?",
+       "Fidgeting or squirm with your hands or feet when you have to sit down for a long time?",
+       "Feeling overly active and compelled to do things, like you were driven by a motor?"
+     ]
+    }
+   ]
+  },
 
-  // {
-  //  "name": "OCI-18",
-  //  "elements": [
-  //   {
-  //    "type": "matrix",
-  //    "name": "OCI",
-  //    "title": "Over the last two weeks, how often have you been bothered by the following problems?",
-  //    "columns": [
-  //      "Not at all",
-  //      "A little",
-  //      "Moderately",
-  //      "A lot",
-  //      "Extremely"
-  //    ],
-  //    "rows": [
-  //      "I worry that I might lose the ability to walk through walls.",
-  //      "I have saved up so many things that they get in the way.",
-  //      "I check things more often than necessary.",
-  //      "I get upset if objects are not arranged properly.",
-  //      "I feel compelled to count while I am doing things.",
-  //      "I find it difficult to touch an object when I know it has been touched by strangers or certain people.",
-  //      "I find it difficult to control my own thoughts.",
-  //      "I collect things I don't need.",
-  //      "I repeatedly check doors, windows, drawers, etc.",
-  //      "I get upset if others change the way I have arranged things.",
-  //      "I feel I have to repeat certain numbers.",
-  //      "I sometimes have to wash or clean myself simply because I feel contaminated.",
-  //      "I am upset by unpleasant thoughts that come into my mind against my will.",
-  //      "I avoid throwing things away because I am afraid I might need them later.",
-  //      "I repeatedly check gas and water taps and light switches after turning them off.",
-  //      "I need things to be arranged in a particular way.",
-  //      "I feel that there are good and bad numbers.",
-  //      "I wash my hands more often and longer than necessary.",
-  //      "I frequently get nasty thoughts and have difficulty in getting rid of them."
-  //    ]
-  //   }
-  //  ]
-  // },
+  {
+   "name": "OCI-18",
+   "elements": [
+    {
+     "type": "matrix",
+     "name": "OCI",
+     "title": "Over the last two weeks, how often have you been bothered by the following problems?",
+     "columns": [
+       "Not at all",
+       "A little",
+       "Moderately",
+       "A lot",
+       "Extremely"
+     ],
+     "rows": [
+       "I worry that I might lose the ability to walk through walls.",
+       "I have saved up so many things that they get in the way.",
+       "I check things more often than necessary.",
+       "I get upset if objects are not arranged properly.",
+       "I feel compelled to count while I am doing things.",
+       "I find it difficult to touch an object when I know it has been touched by strangers or certain people.",
+       "I find it difficult to control my own thoughts.",
+       "I collect things I don't need.",
+       "I repeatedly check doors, windows, drawers, etc.",
+       "I get upset if others change the way I have arranged things.",
+       "I feel I have to repeat certain numbers.",
+       "I sometimes have to wash or clean myself simply because I feel contaminated.",
+       "I am upset by unpleasant thoughts that come into my mind against my will.",
+       "I avoid throwing things away because I am afraid I might need them later.",
+       "I repeatedly check gas and water taps and light switches after turning them off.",
+       "I need things to be arranged in a particular way.",
+       "I feel that there are good and bad numbers.",
+       "I wash my hands more often and longer than necessary.",
+       "I frequently get nasty thoughts and have difficulty in getting rid of them."
+     ]
+    }
+   ]
+  },
   {
    "name": "Diagnosis",
    "elements": [
     {
      "type": "checkbox",
-     "name": "question1",
+     "name": "diagnosis",
      "title": "Have you ever been professionally diagnosed with a psychiatric condition?",
      "choices": [
       {
