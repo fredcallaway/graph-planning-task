@@ -58,6 +58,7 @@ class CircleGraph {
       keep_hover: true,
       revealed: false,
     })
+    options.two_stage = options.two_stage ?? !options.revealed
     // successorKeys:  options.graphRenderOptions.successorKeys
     this.trialId = crypto.randomUUID()
     this.logEvent('graph.construct', _.pick(this.options,
@@ -117,7 +118,7 @@ class CircleGraph {
 
     this.setCurrentState(this.options.start)
     await this.showStartScreen()
-    if (!this.options.revealed) {
+    if (this.options.two_stage) {
       await this.plan()
     }
     await this.navigate()
@@ -395,6 +396,10 @@ class CircleGraph {
   async navigate(options) {
     let path = []
     this.logEvent('graph.navigate', options)
+    if (this.options.two_stage) {
+      this.el.classList.add('hideStates');
+      this.el.classList.add('hideEdges');
+    }
     options = options || {};
     if (this.state === undefined) {
       this.setCurrentState(this.options.start)

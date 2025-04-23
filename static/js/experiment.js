@@ -12,6 +12,7 @@ async function runExperiment() {
     eye_tracking: false,
     hover_edges: true,
     hover_rewards: true,
+    two_stage: true,
     use_n_steps: false,
     vary_transition: true,
     show_points: false,
