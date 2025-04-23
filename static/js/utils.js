@@ -85,40 +85,89 @@ function conditionParameters(condition, choicesObj) {
   return new ConditionBuilder(condition).chooseMulti(choicesObj)
 }
 
-function enforceScreenSize(width, height, display='#display') {
-  display = $(display)
 
-  warning = $('<div>')
-  .addClass('alert alert-warning center')
-  .css({
-    textAlign: 'center',
-    width: 400,
-    margin: 'auto',
-    marginTop: '100px'
+function enforceScreenSize(width, height, opts={}) {
+  display = $(opts.display ?? '#display')
+  display.css({
+    width: width,
+    height: height,
   })
-  .html(`
-    <h4>Screen too small</h4>
+  if (opts.outline === true) {
+    opts.outline = '3px dotted gray'
+  }
 
-    <p>Your window isn't big enough to run the experiment. Please try expanding the window.
-    It might help to use full screen mode.
-  `).hide()
-  .appendTo(document.body)
+  if (opts.testMode) {
+    display.css({
+      'z-index': 1,
+      'box-sizing': 'content-box',
+      'outline': opts.outline,
+      'outline-offset': '5px'
+    })
+  }
 
-  $('<button>').addClass('btn btn-primary').css('margin-top', '20px').text('enter fullscreen').appendTo(warning)
-  .click(() => {
-    document.documentElement.requestFullscreen()
-  })
+  let warning = $("<div>")
+    .addClass("alert alert-warning center")
+    .css({
+      width: 400,
+      // 'position': 'absolute',
+      // 'top': '30%',
+      margin: "auto",
+      "margin-top": "100px",
+    })
+    .appendTo(document.body)
+
+  function resetWarning() {
+    warning
+      .html(
+        `
+      <h4>Screen too small</h4>
+
+      <p>Your window isn't big enough to run the experiment. Please try expanding the window.
+      It might help to use full screen mode.
+    `
+      )
+      .hide()
+
+    $("<button>")
+      .addClass("btn btn-primary")
+      .css("margin-top", "20px")
+      .text("enter fullscreen")
+      .appendTo(warning)
+      .click(async () => {
+        document.documentElement.requestFullscreen()
+        await sleep(1000)
+        warning.html(`
+        <h4>Darn, still not big enough!</h4>
+
+        <p>You can also try zooming out a bit with <code>cmd/ctrl minus</code>.
+      `)
+      })
+  }
+  resetWarning()
 
   function enforcer() {
+    if (opts.autoScale ?? opts.testMode) {
+      let wr = window.innerWidth / width
+      let hr = window.innerHeight / height
+      let scale = Math.min(wr, hr)
+      if (scale < 1) {
+        display.css({
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left'
+        })
+      }
+    }
+    if (opts.testMode) return
     if (window.innerWidth < width || window.innerHeight < height) {
       warning.show()
       display.hide()
     } else {
       warning.hide()
+      resetWarning()
       display.show()
     }
   }
-  window.addEventListener('resize', enforcer);
+  window.addEventListener("resize", enforcer)
   enforcer()
   return enforcer
 }

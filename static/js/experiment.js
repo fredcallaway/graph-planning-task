@@ -50,8 +50,9 @@ async function runExperiment() {
 
   // logEvent is how you save data to the database
   logEvent('experiment.initialize', {condition: CONDITION, params: PARAMS, trials: config.trials})
-  enforceScreenSize(1000, 780)
-  DISPLAY.css({width: 1000})
+  // enforceScreenSize(1000, 780)
+  enforceScreenSize(700, 750, {testMode: local})
+  DISPLAY.css({width: 700})
 
 
   async function instructions() {
